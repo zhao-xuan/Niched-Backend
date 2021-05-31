@@ -8,6 +8,7 @@ unit-test:
   script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
+    - export PYTHONPATH=.
     - pytest --cov-report term-missing:skip-covered --cov=niched/ test/unit_tests/
 
 integration-test:
@@ -16,6 +17,7 @@ integration-test:
   script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
+    - export PYTHONPATH=.
     - pytest --cov-report term-missing:skip-covered --cov=niched/ test/integration_tests/
 
 heroku-deploy:

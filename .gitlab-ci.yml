@@ -1,0 +1,11 @@
+stages:
+  - test 
+  - deploy 
+
+unittest:
+  image: python:3.8-buster
+  stage: test
+  script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pytest --cov-report term-missing:skip-covered --cov=niched/ test/ 

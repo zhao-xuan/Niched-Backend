@@ -2,10 +2,28 @@ stages:
   - test 
   - deploy 
 
-unittest:
+unit-test:
   image: python:3.8-buster
   stage: test
   script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
-    - pytest --cov-report term-missing:skip-covered --cov=niched/ test/ 
+    - pytest --cov-report term-missing:skip-covered --cov=niched/ test/unit_tests/
+
+integration-test:
+  image: python:3.8-buster
+  stage: test
+  script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pytest --cov-report term-missing:skip-covered --cov=niched/ test/integration_tests/
+
+heroku-deploy:
+  image: ruby:3.0.1
+  stage: deploy 
+  script:
+    - gem install dpl
+    - dpl --provider=heroku --app=niched-api --api-key=$HEROKU_SERVER_API_KEY
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+

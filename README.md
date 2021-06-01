@@ -48,7 +48,10 @@ export PYTHONPATH=.
 pytest --cov-report term-missing:skip-covered --cov=niched/ test/unit_tests/
 ```
 
-When running integration tests, use **dev** database!
+When running integration tests, use **dev** database! You can also create your own database locally,
+and then connect to this database in development stage. 
+
+To create a local mongoDB, follow [this guide](https://docs.mongodb.com/manual/installation/)! 
 ```shell
 # Create a new virtual environment
 python3 -m venv env 

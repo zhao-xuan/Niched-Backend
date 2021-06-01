@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Form
 from fastapi.security import OAuth2PasswordRequestForm
 
 from niched.database.authentication import create_user, get_user
-from niched.database.mongo import client
+from niched.database.mongo import conn
 from niched.models.schema.users import UserDetailsDB
 
 router = APIRouter()
@@ -13,7 +13,7 @@ router = APIRouter()
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     username = form_data.username
     password = form_data.password
-    user = get_user(client, username)
+    user = get_user(conn.get_users_collection(), username)
 
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
@@ -28,13 +28,13 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 @router.post("/signup")
 def signup(username: str = Form(..., description="Unique account username, used for log-in"),
            password: str = Form(..., description="Password")):
-    if get_user(client, username) is not None:
+    if get_user(conn.get_users_collection(), username) is not None:
         raise HTTPException(status_code=400, detail="Username already exists")
 
     hash_pwd = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     userdb = UserDetailsDB(username=username, password=hash_pwd.decode("utf-8"))
 
-    if create_user(client, userdb):
+    if create_user(conn.get_users_collection(), userdb):
         return {"username": username}
 
     raise HTTPException(status_code=500, detail="User creation failed! Please try again later!")

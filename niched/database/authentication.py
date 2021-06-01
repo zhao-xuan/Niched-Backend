@@ -1,17 +1,17 @@
 import logging
 from typing import Optional
 
-from pymongo import MongoClient
+from pymongo.collection import Collection
 
 from niched.models.schema.users import UserDetailsDB
 
 logger = logging.getLogger(__name__)
 
 
-def create_user(client: MongoClient, user_details: UserDetailsDB) -> bool:
+def create_user(users: Collection, user_details: UserDetailsDB) -> bool:
     user_dict = user_details.dict()
-    client["users"].insert_one(user_dict)
     try:
+        users.insert_one(user_dict)
         logger.info(f"User {user_details.username} created successfully!")
         return True
     except Exception as e:
@@ -19,10 +19,9 @@ def create_user(client: MongoClient, user_details: UserDetailsDB) -> bool:
         return False
 
 
-def get_user(client: MongoClient, username: str) -> Optional[UserDetailsDB]:
+def get_user(users: Collection, username: str) -> Optional[UserDetailsDB]:
     try:
-        users_coll = client["users"]
-        user_json = users_coll.find_one({"username": username})
+        user_json = users.find_one({"username": username})
         return UserDetailsDB(**user_json) if user_json else None
     except Exception as e:
         logger.error(f"Exception raised when fetching user {username}: {e}")

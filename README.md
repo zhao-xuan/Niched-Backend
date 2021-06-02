@@ -32,6 +32,14 @@ pip3 install -r requirements.txt
 export DB_CONNECTION_STRING=<dev database connection string>
 ```
 
+Note: When testing on local database, set it to something like
+
+DB_CONNECTION_STRING="mongodb://127.0.0.1:27017/"
+
+And for MongoDB Atlas, do something like
+
+"mongodb+srv://<host>:<server>@cluster0.jqoga.mongodb.net/<database>?retryWrites=true&w=majority"
+
 ```shell
 uvicorn --port <port_number> --workers 8 niched.main:app
 #replace <port_number> with a port number to run the web app on, different to the database's port number

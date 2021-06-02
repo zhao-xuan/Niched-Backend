@@ -10,6 +10,11 @@
 
 ## Running the app locally
 
+First download and set up MongoDB locally by following the tutorial:
+
+https://medium.com/swlh/get-up-and-running-with-mongodb-in-under-5-minutes-abc8770b1ef8#:~:text=Open%20the%20terminal%2C%20and%20navigate,version%20and%20mongod%20%2D%2Dversion%20.
+
+
 You can run the server locally as followed:
 
 ```shell
@@ -28,7 +33,8 @@ export DB_CONNECTION_STRING=<dev database connection string>
 ```
 
 ```shell
-uvicorn --port $PORT --workers 8 niched.main:app```
+uvicorn --port <port_number> --workers 8 niched.main:app
+#replace <port_number> with a port number to run the web app on, different to the database's port number
 ```
 
 ## Testing locally

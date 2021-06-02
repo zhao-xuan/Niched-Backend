@@ -15,7 +15,7 @@ def create_user(users: Collection, user_details: UserDetailsDB) -> bool:
         logger.info(f"User {user_details.username} created successfully!")
         return True
     except Exception as e:
-        logger.error(f"Cannot create user with details {user_details.json()}, exception raised {e}")
+        logger.error(f"Cannot create user {user_details.username}, exception raised {e}")
         return False
 
 

@@ -58,9 +58,19 @@ python3 -m venv env
 source env/bin/activate
 pip3 install -r requirements.txt 
 export PYTHONPATH=.
-export DB_CONNECTION_STRING=<dev database connection>
+export DB_CONNECTION_STRING=<database connection string>
+export DB_DATABASE="develop"
 
 pytest --cov-report term-missing:skip-covered --cov=niched/ test/integration_tests/
 ```
 
+For example, to run the server locally, set `DB_CONNECTION_STRING` to `mongodb://127.0.0.1:27017/`
+
 [Pytest](https://docs.pytest.org/en/6.2.x/index.html) has more options for reports, see the page for more information!
+
+To run GitLab-CI test pipelines:
+
+```shell
+gitlab-runner exec docker unit-test
+gitlab-runner exec docker integration-test
+```

@@ -1,7 +1,6 @@
 import logging
-import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, Form
-from fastapi.security import OAuth2PasswordRequestForm
+
+from fastapi import APIRouter, HTTPException
 
 from niched.database.groupMethods import create_group, get_group
 from niched.database.mongo import conn
@@ -10,14 +9,6 @@ from niched.models.schema.groups import GroupData
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
-
-
-@router.get("/groups", response_model=GroupData)
-def get_all_groups():
-    groups_collection = conn.get_groups_collection()
-    for group in groups_collection.find({}):
-        logger.info(group)
-    logger.info("HERE")
 
 
 @router.get("/{group_id}", response_model=GroupData)

@@ -1,39 +1,43 @@
-import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, Form
-from fastapi.security import OAuth2PasswordRequestForm
+import logging
+from typing import Dict
 
-from niched.database.groupMethods import create_group, get_group
+from fastapi import APIRouter, HTTPException
+
+from niched.database.groupMethods import create_group, get_group, get_all_groups_in_db
 from niched.database.mongo import conn
-from niched.models.schema.groups import GroupDetailsDB
+from niched.models.schema.groups import GroupDataDB, GroupFormData
 
 router = APIRouter()
 
+logger = logging.getLogger(__name__)
 
-@router.post("/groupinfo")
-def group_info(name: str = Form(..., description="Name for the group to be queried in the database")):
 
+@router.get("/all", response_model=Dict[str, GroupDataDB])
+def get_all_groups():
+    groups_collection = conn.get_groups_collection()
+    all_groups = {}
+    for i, group in enumerate(groups_collection.find({})):
+        all_groups[i] = group
+
+    return all_groups
+
+
+@router.get("/{group_id}", response_model=GroupDataDB)
+def get_group_with_id(group_id: str):
+    groups_collection = conn.get_groups_collection()
+    group_data = get_group(groups_collection, group_id)
+    if group_data is None:
+        raise HTTPException(status_code=400, detail="Group does not exist")
+
+    return group_data
+
+
+@router.post("/new")
+def create_new_group(group_details: GroupFormData):
     groups_collection = conn.get_groups_collection()
 
-    group_details = get_group(groups_collection, name)
-
-    if group_details:
-        return group_details
-
-    raise HTTPException(status_code=400, detail="Group search failed.")
-
-
-@router.post("/creategroup")
-def new_goup(name: str = Form(..., description="Unique space name, for identifying a group"),
-           description: str = Form(..., description="Description for the space")):
-
-    groups_collection = conn.get_groups_collection()
-
-    if get_group(groups_collection, name) is not None:
-        raise HTTPException(status_code=400, detail="Group already exists")
-
-    groupdb = GroupDetailsDB(name=name, description=description)
-
-    if create_group(groups_collection, groupdb):
-        return {"name": name}
-
-    raise HTTPException(status_code=500, detail="Group creation failed! Please try again later!")
+    try:
+        create_group(groups_collection, group_details)
+    except Exception as e:
+        logger.error(f"Cannot create new group {e}")
+        raise HTTPException(status_code=400, detail="Failed to create new group")

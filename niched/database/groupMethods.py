@@ -9,11 +9,15 @@ from niched.models.schema.groups import GroupDataDB, GroupFormData
 logger = logging.getLogger(__name__)
 
 
+def check_group_id_exist(groups: Collection, group_id: str) -> bool:
+    return groups.count_documents({"group_id": group_id}) > 0
+
+
 def create_group(groups: Collection, group_details: GroupFormData) -> bool:
     group_data_insert = GroupDataDB(
         group_id=group_details.group_id,
         name=group_details.name,
-        description=group_details.group_id,
+        description=group_details.description,
         image_url=group_details.image_url,
         creation_date=datetime.utcnow())  # group_details.dict()
 

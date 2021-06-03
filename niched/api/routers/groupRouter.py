@@ -4,14 +4,14 @@ from fastapi import APIRouter, HTTPException
 
 from niched.database.groupMethods import create_group, get_group
 from niched.database.mongo import conn
-from niched.models.schema.groups import GroupData
+from niched.models.schema.groups import GroupDataDB, GroupFormData
 
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
 
-@router.get("/{group_id}", response_model=GroupData)
+@router.get("/{group_id}", response_model=GroupDataDB)
 def get_all_groups(group_id: str):
     groups_collection = conn.get_groups_collection()
     group_data = get_group(groups_collection, group_id)
@@ -22,7 +22,7 @@ def get_all_groups(group_id: str):
 
 
 @router.post("/new")
-def create_new_group(group_details: GroupData):
+def create_new_group(group_details: GroupFormData):
     groups_collection = conn.get_groups_collection()
 
     try:

@@ -5,6 +5,9 @@ stages:
 unit-test:
   image: python:3.8-buster
   stage: test
+  variables:
+    DB_STRING_CONNECTION: '"$DB_STRING_CONNECTION"'
+    DB_DATABASE: '"$DB_DATABASE"'
   script:
     - pip install --upgrade pip
     - pip install -r requirements.txt

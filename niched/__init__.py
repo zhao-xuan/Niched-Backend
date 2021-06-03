@@ -1,1 +1,0 @@
-# Required packages, you should specify the exact version if applicable

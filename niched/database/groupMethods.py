@@ -3,12 +3,12 @@ from typing import Optional
 
 from pymongo.collection import Collection
 
-from niched.models.schema.groups import GroupDetailsDB
+from niched.models.schema.groups import GroupData
 
 logger = logging.getLogger(__name__)
 
 
-def create_group(groups: Collection, group_details: GroupDetailsDB) -> bool:
+def create_group(groups: Collection, group_details: GroupData) -> bool:
     group_dict = group_details.dict()
     try:
         groups.insert_one(group_dict)
@@ -19,10 +19,10 @@ def create_group(groups: Collection, group_details: GroupDetailsDB) -> bool:
         return False
 
 
-def get_group(groups: Collection, name: str) -> Optional[GroupDetailsDB]:
+def get_group(groups: Collection, name: str) -> Optional[GroupData]:
     try:
         group_json = groups.find_one({"name": name})
-        return GroupDetailsDB(**group_json) if group_json else None
+        return GroupData(**group_json) if group_json else None
     except Exception as e:
         logger.error(f"Exception raised when fetching group {name}: {e}")
         return None

@@ -14,6 +14,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 ADD . /niched
 
+CMD source /niched/.env
+
 RUN chown -R server:server /niched
 
 USER server

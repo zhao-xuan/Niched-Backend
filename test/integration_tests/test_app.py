@@ -24,3 +24,7 @@ class UserAuthenticationTestCase(unittest.TestCase):
                                         "accept": "application/json"},
                                data="username=non-existent&password=test")
         assert response.status_code == 401
+
+
+    # Integration test to be added for groups after we complete all group functionality
+    #     i.e. add threads, admin features etc. Or will have to rewrite integration test

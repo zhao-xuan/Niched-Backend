@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Optional, List
 
-
+from bson.objectid import ObjectId
 from pymongo.collection import Collection
 
 from niched.models.schema.threads import ThreadFormData, ThreadDataDB
@@ -33,7 +33,7 @@ def create_thread(threads_collection: Collection, thread_details: ThreadFormData
 
 def get_thread(threads_collection: Collection, thread_id: str) -> Optional[ThreadDataDB]:
     try:
-        thread_json = threads_collection.find_one({"_id": thread_id})
+        thread_json = threads_collection.find_one({"_id": ObjectId(thread_id)})
         return ThreadDataDB(**thread_json) if thread_json else None
     except Exception as e:
         logger.error(f"Exception raised when fetching thread {thread_id}: {e}")

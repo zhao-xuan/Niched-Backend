@@ -18,17 +18,14 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
+def parse_json(data):
+    return json.loads(json_util.dumps(data))
 """
 Thread endpoint functions. The following functions should be created:
 1. get_threads_in_group()
 2. get_thread()
 3. create_thread()
 """
-
-
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
-
 
  
 """
@@ -72,14 +69,17 @@ def get_group_with_id(thread_id: str):
     return thread_data
 
 
-# @router.get("/{group_id}", response_model=Dict[str, GroupDataDB])
-# def get_threads_in_group(group_id: str):
-#     groups_collection = conn.get_groups_collection()
-#     all_groups = {}
-#     for i, group in enumerate(groups_collection.find({})):
-#         all_groups[i] = group
+@router.get("/by_group/{group_id}", response_model=Dict[str, ThreadDataDB])
+def get_threads_in_group(group_id: str):
+    threads_collection = conn.get_threads_collection()
+    groups_collection = conn.get_groups_collection()
 
-#     return all_groups
+    group_threads = {}
+
+    for i, thread in enumerate(threads_collection.find({"group_id": group_id})):
+        group_threads[i] = thread
+
+    return group_threads
 
 
 

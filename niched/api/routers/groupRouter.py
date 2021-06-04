@@ -1,6 +1,8 @@
 import logging
 from typing import Dict
 
+from bson.objectid import ObjectId
+
 from fastapi import APIRouter, HTTPException
 
 from niched.database.groupMethods import create_group, get_group, get_all_groups_in_db

@@ -29,5 +29,9 @@ class MongoConnection:
     def get_groups_collection():
         return MongoConnection.db["groups"]
 
+    @staticmethod
+    def get_threads_collection():
+        return MongoConnection.db["threads"]
+
 
 conn = MongoConnection()

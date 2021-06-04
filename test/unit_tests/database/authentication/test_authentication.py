@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from niched.database.authentication import create_user, get_user
+from niched.database.authentication import create_user, get_user_login_details
 from niched.models.schema.users import UserDetailsDB
 
 
@@ -30,11 +30,11 @@ class UsersAuthTestCase(unittest.TestCase):
     def test_get_user_queries_db(self):
         mock_client = Mock()
 
-        get_user(mock_client, "")
+        get_user_login_details(mock_client, "")
         mock_client.find_one.assert_called()
 
     def test_get_user_returns_none_when_users_not_found(self):
         mock_client = Mock()
         mock_client.find_one.return_value = None
 
-        self.assertIsNone(get_user(mock_client, ""))
+        self.assertIsNone(get_user_login_details(mock_client, ""))

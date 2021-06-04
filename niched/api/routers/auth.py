@@ -1,15 +1,6 @@
-from datetime import datetime, timedelta
-from typing import Union
-
 import bcrypt
-import jwt
 from fastapi import APIRouter, Depends, HTTPException, Form
 from fastapi.security import OAuth2PasswordRequestForm
-from niched.core.config import ACCESS_TOKEN_EXPIRE_MINS, ACCESS_TOKEN_SECRET_KEY
-from niched.database.authentication import create_user, get_user
-from niched.database.mongo import conn
-from niched.models.schema.users import UserDetailsDB, UserDetails, UserToken
-
 from starlette.status import (
     HTTP_201_CREATED,
     HTTP_409_CONFLICT,
@@ -18,16 +9,13 @@ from starlette.status import (
     HTTP_202_ACCEPTED
 )
 
+from niched.core.config import ACCESS_TOKEN_EXPIRE_MINS, ACCESS_TOKEN_SECRET_KEY
+from niched.database.authentication import create_user, get_user_login_details
+from niched.database.mongo import conn
+from niched.models.schema.users import UserDetailsDB, UserDetails, UserToken
+from niched.utilities.token import create_access_token
+
 router = APIRouter()
-
-
-def create_access_token(user_details: UserDetails, expiration_mins: int, secret_key: Union[str, bytes]) -> str:
-    expiration = datetime.utcnow() + timedelta(minutes=expiration_mins)
-    data = {
-        "sub": user_details.username,
-        "exp": expiration
-    }
-    return jwt.encode(data, secret_key)
 
 
 @router.post("/login", status_code=HTTP_202_ACCEPTED, response_model=UserToken, name="auth:login")
@@ -36,7 +24,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     password = form_data.password
 
     users_collection = conn.get_users_collection()
-    user_db = get_user(users_collection, username)
+    user_db = get_user_login_details(users_collection, username)
 
     if not user_db:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
@@ -54,7 +42,7 @@ def signup(username: str = Form(..., description="Unique account username, used 
            password: str = Form(..., description="Password")):
     users_collection = conn.get_users_collection()
 
-    if get_user(users_collection, username) is not None:
+    if get_user_login_details(users_collection, username) is not None:
         raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Username already exists")
 
     hash_pwd = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())

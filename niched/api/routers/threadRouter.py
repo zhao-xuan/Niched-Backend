@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Body, FastAPI, status
 from fastapi.responses import JSONResponse
 
 from niched.database.threadMethods import create_thread, get_thread
+from niched.database.groupMethods import get_group
 from niched.database.mongo import conn
 from niched.models.schema.threads import ThreadDataDB, ThreadFormData
 
@@ -40,8 +41,11 @@ Success: HTTP 201 with response body:
 @router.post("/new")
 def create_new_thread(thread_details: ThreadFormData):
     threads_collection = conn.get_threads_collection()
-
+    groups_collection = conn.get_groups_collection()
     # check thread_details.group_id is a valid group first!
+    group_data = get_group(groups_collection, thread_details.group_id)
+    if group_data is None:
+        raise HTTPException(status_code=400, detail="Group does not exist")
 
     try:
         _id = create_thread(threads_collection, thread_details)

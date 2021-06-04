@@ -15,7 +15,7 @@ def create_thread(threads_collection: Collection, thread_details: ThreadFormData
     thread_data_insert = ThreadDataDB(
         group_id=thread_details.group_id,
         title=thread_details.title,
-        description=thread_details.group_id,
+        description=thread_details.description,
         creation_date=datetime.utcnow())
 
     thread_dict = thread_data_insert.dict()
@@ -24,7 +24,6 @@ def create_thread(threads_collection: Collection, thread_details: ThreadFormData
         # collection.insert returns the id of the new object inserted into the database
         _id = threads_collection.insert(thread_dict)
         logger.info(f"Thread {thread_details.title} created successfully!")
-        print(_id)
         return _id
     except Exception as e:
         logger.error(f"Cannot create thread {thread_details.title}, exception raised {e}")

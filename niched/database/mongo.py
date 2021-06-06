@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class MongoConnection:
     try:
-        logger.info("Initiating connection to mongoDB Atlas Cluster")
+        logger.info("Initiating connection to mongoDB")
         client = MongoClient(DB_CONNECTION_STRING)
         logger.info(f"Connected to cluster, now attempting to access database {DB_DATABASE}")
         db = client[DB_DATABASE]

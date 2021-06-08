@@ -1,9 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
-
-from bson.objectid import ObjectId
+from pydantic import BaseModel
 
 
 class EventIn(BaseModel):
@@ -32,4 +30,4 @@ class EventDB(EventIn):
 
 
 class EventOut(EventDB):
-    id: str
+    event_id: str

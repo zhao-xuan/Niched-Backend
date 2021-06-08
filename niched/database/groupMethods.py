@@ -14,6 +14,7 @@ def check_group_id_exist(groups: Collection, group_id: str) -> bool:
 
 
 def create_group(groups: Collection, group_details: GroupFormData) -> bool:
+
     group_data_insert = GroupDataDB(
         group_id=group_details.group_id,
         name=group_details.name,

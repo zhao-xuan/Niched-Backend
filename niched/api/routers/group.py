@@ -37,6 +37,9 @@ def get_group_with_id(group_id: str):
 def create_new_group(group_details: GroupFormData):
     groups_collection = conn.get_groups_collection()
 
+    if group_details.image_url == "":
+        group_details.image_url = None
+
     if check_group_id_exist(groups_collection, group_details.group_id):
         raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Group ID already in used!")
 

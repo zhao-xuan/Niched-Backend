@@ -5,9 +5,6 @@ stages:
 unit-test:
   image: python:3.8-buster
   stage: test
-  variables:
-    DB_STRING_CONNECTION: '"$DB_STRING_CONNECTION"'
-    DB_DATABASE: '"$DB_DATABASE"'
   script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
@@ -21,6 +18,7 @@ integration-test:
     - pip install --upgrade pip
     - pip install -r requirements.txt
     - export PYTHONPATH=.
+    - export $(grep -v '^#' "$NICHED_SECRETS_DEV_ENV"  | xargs)
     - pytest --cov-report term-missing:skip-covered --cov=niched/ test/integration_tests/
 
 heroku-deploy:
@@ -28,6 +26,7 @@ heroku-deploy:
   stage: deploy 
   script:
     - gem install dpl
+    - cp "$NICHED_SECRETS" .env
     - dpl --provider=heroku --app=niched-api --api-key=$HEROKU_SERVER_API_KEY
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

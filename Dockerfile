@@ -14,6 +14,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 ADD . /niched
 
+CMD export $(grep -v '^#' /niched/.env | xargs) 
+
 RUN chown -R server:server /niched
 
 USER server

@@ -9,7 +9,7 @@ class UserToken(BaseModel):
 
 
 class UserDetails(BaseModel):
-    username: str
+    user_name: str
     mail: Optional[EmailStr]
     age: Optional[int]
     subscribed_groups: List[str] = []
@@ -18,7 +18,7 @@ class UserDetails(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "username": "gavin-123-456",
+                "user_name": "gavin-123-456",
                 "age": 50
             }
         }

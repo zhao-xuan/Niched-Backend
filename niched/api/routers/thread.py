@@ -5,9 +5,9 @@ from typing import Dict
 from bson import json_util
 from fastapi import APIRouter, HTTPException, status
 
-from niched.database.groupMethods import get_group
+from niched.database.group_utils import get_group
 from niched.database.mongo import conn
-from niched.database.threadMethods import create_thread, get_thread
+from niched.database.thread_utils import create_thread, get_thread
 from niched.models.schema.threads import ThreadDataDB, ThreadFormData
 
 router = APIRouter()

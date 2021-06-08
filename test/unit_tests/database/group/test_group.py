@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock
 from datetime import datetime
 
-from niched.database.groupMethods import create_group, get_group, check_group_id_exist
+from niched.database.group_utils import create_group, get_group, check_group_id_exist
 from niched.models.schema.groups import GroupDataDB
 
 

@@ -10,7 +10,7 @@ from niched.models.schema.events import EventIn, EventOut
 router = APIRouter()
 
 
-@router.post("/new", response_model=EventOut, status_code=HTTP_201_CREATED, name="event:create")
+@router.post("/", response_model=EventOut, status_code=HTTP_201_CREATED, name="event:create")
 def new_event(event_data: EventIn):
     event_coll = conn.get_events_collection()
 

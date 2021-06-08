@@ -9,7 +9,7 @@ class UserToken(BaseModel):
 
 
 class UserDetails(BaseModel):
-    username: str
+    user_name: str
     mail: Optional[EmailStr]
     age: Optional[int]
     subscribed_groups: List[str] = []

@@ -19,17 +19,17 @@ def create_user(users: Collection, user_details: UserDetailsDB) -> bool:
         return False
 
 
-def get_user_login_details(users: Collection, username: str) -> Optional[UserDetailsDB]:
+def get_user_login_details(users: Collection, user_name: str) -> Optional[UserDetailsDB]:
     try:
-        user_json = users.find_one({"username": username})
+        user_json = users.find_one({"user_name": user_name})
         return UserDetailsDB(**user_json) if user_json else None
     except Exception as e:
-        logger.error(f"Exception raised when fetching user {username}: {e}")
+        logger.error(f"Exception raised when fetching user {user_name}: {e}")
         return None
 
 
-def get_user_details(users: Collection, username: str) -> Optional[UserDetails]:
-    user_login_details = get_user_login_details(users, username)
+def get_user_details(users: Collection, user_name: str) -> Optional[UserDetails]:
+    user_login_details = get_user_login_details(users, user_name)
     if user_login_details is None:
         return None
     return UserDetails(**user_login_details.dict(exclude={"password"}))

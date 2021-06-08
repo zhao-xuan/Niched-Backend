@@ -24,7 +24,7 @@ class InvalidTokenValue(TokenException):
 def create_access_token(user_details: UserDetails, expiration_mins: int, secret_key: Union[str, bytes]) -> str:
     expiration = datetime.utcnow() + timedelta(minutes=expiration_mins)
     data = {
-        "sub": user_details.username,
+        "sub": user_details.user_name,
         "exp": expiration
     }
     return jwt.encode(data, secret_key)

@@ -18,7 +18,7 @@ integration-test:
     - pip install --upgrade pip
     - pip install -r requirements.txt
     - export PYTHONPATH=.
-    - export $(grep -v '^#' "$NICHED_SECRETS"  | xargs)
+    - export $(grep -v '^#' "$NICHED_SECRETS_DEV_ENV"  | xargs)
     - pytest --cov-report term-missing:skip-covered --cov=niched/ test/integration_tests/
 
 heroku-deploy:

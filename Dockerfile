@@ -14,10 +14,10 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 ADD . /niched
 
-CMD export $(grep -v '^#' /niched/.env | xargs) 
-
 RUN chown -R server:server /niched
 
 USER server
 
-CMD uvicorn --host 0.0.0.0 --port $PORT --workers 8 niched.main:app
+CMD export $(grep -v '^#' /niched/.env | xargs) \
+    && uvicorn --host 0.0.0.0 --port $PORT --workers 8 niched.main:app
+

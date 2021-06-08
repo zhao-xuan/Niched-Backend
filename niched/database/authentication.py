@@ -12,10 +12,10 @@ def create_user(users: Collection, user_details: UserDetailsDB) -> bool:
     user_dict = user_details.dict()
     try:
         users.insert_one(user_dict)
-        logger.info(f"User {user_details.username} created successfully!")
+        logger.info(f"User {user_details.user_name} created successfully!")
         return True
     except Exception as e:
-        logger.error(f"Cannot create user {user_details.username}, exception raised {e}")
+        logger.error(f"Cannot create user {user_details.user_name}, exception raised {e}")
         return False
 
 

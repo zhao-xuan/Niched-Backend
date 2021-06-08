@@ -10,7 +10,7 @@ class UserToken(BaseModel):
 
 class UserDetails(BaseModel):
     user_name: str
-    mail: Optional[EmailStr]
+    email: Optional[EmailStr]
     age: Optional[int]
     subscribed_groups: List[str] = []
     interests: List[str] = []
@@ -29,7 +29,7 @@ class UserDetailsDB(UserDetails):
 
 
 class UserDetailsUpdate(BaseModel):
-    mail: Optional[EmailStr]
+    email: Optional[EmailStr]
     age: Optional[int]
     subscribed_groups: Optional[List[str]]
     interests: Optional[List[str]]

@@ -4,7 +4,7 @@ from starlette.status import (
 )
 
 from niched.database.mongo import conn
-from niched.database.user import check_user_id_exist, get_user_profile, update_user_profile
+from niched.database.user_utils import check_user_id_exist, get_user_profile, update_user_profile
 from niched.models.schema.users import UserDetails, UserDetailsUpdate
 
 router = APIRouter()

@@ -3,7 +3,7 @@ from starlette.status import (
     HTTP_201_CREATED, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_404_NOT_FOUND, HTTP_200_OK
 )
 
-from niched.database.events import create_event, check_event_id_exist, get_event_with_id
+from niched.database.event_utils import create_event, check_event_id_exist, get_event_with_id
 from niched.database.mongo import conn
 from niched.models.schema.events import EventIn, EventOut
 

@@ -6,8 +6,8 @@ from pydantic import constr
 from starlette.status import (HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT,
                               HTTP_500_INTERNAL_SERVER_ERROR)
 
-from niched.database.events import get_events_by_group
-from niched.database.groupMethods import create_group, get_group, check_group_id_exist
+from niched.database.event_utils import get_events_by_group
+from niched.database.group_utils import create_group, get_group, check_group_id_exist
 from niched.database.mongo import conn
 from niched.models.schema.events import EventOut
 from niched.models.schema.groups import GroupDataDB, GroupFormData

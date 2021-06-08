@@ -18,6 +18,5 @@ RUN chown -R server:server /niched
 
 USER server
 
-CMD export $(grep -v '^#' /niched/.env | xargs) \
-    && uvicorn --host 0.0.0.0 --port $PORT --workers 8 niched.main:app
+CMD uvicorn --host 0.0.0.0 --port $PORT --workers 8 niched.main:app
 

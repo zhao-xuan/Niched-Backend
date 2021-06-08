@@ -6,8 +6,8 @@ from pydantic import constr
 from starlette.status import (HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT,
                               HTTP_500_INTERNAL_SERVER_ERROR)
 
-from niched.database.events import get_events_by_group
-from niched.database.groupMethods import create_group, get_group, check_group_id_exist
+from niched.database.event_utils import get_events_by_group
+from niched.database.group_utils import create_group, get_group, check_group_id_exist
 from niched.database.mongo import conn
 from niched.models.schema.events import EventOut
 from niched.models.schema.groups import GroupDataDB, GroupFormData
@@ -36,6 +36,9 @@ def get_group_with_id(group_id: str):
 @router.post("/new", response_model=GroupFormData, status_code=HTTP_201_CREATED, name="group:create")
 def create_new_group(group_details: GroupFormData):
     groups_collection = conn.get_groups_collection()
+
+    if group_details.image_url == "":
+        group_details.image_url = None
 
     if check_group_id_exist(groups_collection, group_details.group_id):
         raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Group ID already in used!")

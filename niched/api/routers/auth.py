@@ -20,11 +20,11 @@ router = APIRouter()
 
 @router.post("/login", status_code=HTTP_202_ACCEPTED, response_model=UserToken, name="auth:login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    username = form_data.username
+    user_name = form_data.user_name
     password = form_data.password
 
     users_collection = conn.get_users_collection()
-    user_db = get_user_login_details(users_collection, username)
+    user_db = get_user_login_details(users_collection, user_name)
 
     if not user_db:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
@@ -38,15 +38,15 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.post("/signup", status_code=HTTP_201_CREATED, response_model=UserDetails, name="auth:signup")
-def signup(username: str = Form(..., description="Unique account username, used for log-in"),
+def signup(user_name: str = Form(..., description="Unique account username, used for log-in"),
            password: str = Form(..., description="Password")):
     users_collection = conn.get_users_collection()
 
-    if get_user_login_details(users_collection, username) is not None:
+    if get_user_login_details(users_collection, user_name) is not None:
         raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Username already exists")
 
     hash_pwd = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-    user_details = UserDetails(username=username)
+    user_details = UserDetails(user_name=user_name)
     userdb = UserDetailsDB(**user_details.dict(), password=hash_pwd.decode("utf-8"))
 
     if create_user(users_collection, userdb):

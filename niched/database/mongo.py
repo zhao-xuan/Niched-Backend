@@ -33,5 +33,9 @@ class MongoConnection:
     def get_threads_collection():
         return MongoConnection.db["threads"]
 
+    @staticmethod
+    def get_events_collection():
+        return MongoConnection.db["events"]
+
 
 conn = MongoConnection()

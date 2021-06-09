@@ -24,7 +24,7 @@ class NewGroupIn(BaseModel):
 
 
 class GroupDataDB(NewGroupIn):
-    members: List[str] = []
+    members: List[str]
     creation_date: datetime
 
 

@@ -4,14 +4,15 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.status import (HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT,
-                              HTTP_500_INTERNAL_SERVER_ERROR)
+                              HTTP_500_INTERNAL_SERVER_ERROR, HTTP_401_UNAUTHORIZED)
 
 from niched.database.event_utils import get_events_by_group
-from niched.database.group_utils import create_group, get_group, check_group_id_exist, group_add_new_member
+from niched.database.group_utils import create_group, get_group, check_group_id_exist, group_add_new_member, \
+    check_member_in_group, group_remove_member, InvalidGroupOperation
 from niched.database.mongo import conn
 from niched.database.user_utils import check_user_id_exist
 from niched.models.schema.events import EventOut
-from niched.models.schema.groups import GroupDataDB, NewGroupIn, NewGroupMemberIn
+from niched.models.schema.groups import GroupDataDB, NewGroupIn, GroupMemberIn
 
 router = APIRouter()
 
@@ -64,7 +65,7 @@ def get_all_events_in_group(group_id: str):
 
 
 @router.post("/{group_id}/members/", status_code=HTTP_201_CREATED, name="group:addMember")
-def get_all_members_in_group(group_id: str, new_member: NewGroupMemberIn):
+def get_all_members_in_group(group_id: str, new_member: GroupMemberIn):
     groups_collection = conn.get_groups_collection()
     users_collection = conn.get_users_collection()
 
@@ -74,8 +75,36 @@ def get_all_members_in_group(group_id: str, new_member: NewGroupMemberIn):
     if not check_user_id_exist(users_collection, new_member.user_name):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User ID does not exist!")
 
+    if check_member_in_group(groups_collection, group_id, new_member.user_name):
+        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="User already in group")
+
     if not group_add_new_member(groups_collection, users_collection, group_id, new_member):
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Server failed to process request, check logs for more detail")
 
-    return JSONResponse(status_code=HTTP_201_CREATED, content={"detail": "User added successfully"})
+    return JSONResponse(status_code=HTTP_201_CREATED, content={"detail": "User added to group successfully"})
+
+
+@router.delete("/{group_id}/members/", status_code=HTTP_200_OK, name="group:removeMember")
+def get_all_members_in_group(group_id: str, new_member: GroupMemberIn):
+    groups_collection = conn.get_groups_collection()
+    users_collection = conn.get_users_collection()
+
+    if not check_group_id_exist(groups_collection, group_id):
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Group ID not found!")
+
+    if not check_user_id_exist(users_collection, new_member.user_name):
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User ID does not exist!")
+
+    if not check_member_in_group(groups_collection, group_id, new_member.user_name):
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User is not in group")
+
+    try:
+        if not group_remove_member(groups_collection, users_collection, group_id, new_member):
+            raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="Server failed to process request, check logs for more detail")
+    except InvalidGroupOperation as e:
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED,
+                            detail=e.message)
+
+    return JSONResponse(status_code=HTTP_200_OK, content={"detail": "User removed from group successfully"})

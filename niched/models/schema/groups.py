@@ -27,5 +27,5 @@ class GroupDataDB(NewGroupIn):
     creation_date: datetime
 
 
-class NewGroupMemberIn(BaseModel):
+class GroupMemberIn(BaseModel):
     user_name: str

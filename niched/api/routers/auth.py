@@ -20,7 +20,7 @@ router = APIRouter()
 
 @router.post("/login", status_code=HTTP_202_ACCEPTED, response_model=UserToken, name="auth:login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user_name = form_data.user_name
+    user_name = form_data.username
     password = form_data.password
 
     users_collection = conn.get_users_collection()

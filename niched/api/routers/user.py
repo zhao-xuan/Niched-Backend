@@ -1,13 +1,23 @@
-from fastapi import APIRouter, HTTPException
+import logging
+
+from fastapi import APIRouter, HTTPException, Depends
 from starlette.status import (
-    HTTP_201_CREATED, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_404_NOT_FOUND, HTTP_200_OK
+    HTTP_500_INTERNAL_SERVER_ERROR, HTTP_404_NOT_FOUND, HTTP_200_OK
 )
 
 from niched.database.mongo import conn
 from niched.database.user_utils import check_user_id_exist, get_user_profile, update_user_profile
 from niched.models.schema.users import UserDetails, UserDetailsUpdate
+from niched.utilities.token import get_current_active_user
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
+
+
+@router.get("/me", response_model=UserDetails, status_code=HTTP_200_OK)
+def read_user_me(current_user: UserDetails = Depends(get_current_active_user)):
+    return current_user
 
 
 @router.get("/{user_name}", response_model=UserDetails, status_code=HTTP_200_OK, name="user:profile")

@@ -15,6 +15,7 @@ class NewGroupIn(BaseModel):
         schema_extra = {
             "example": {
                 "group_id": "csgo",
+                "author_id": "alice",
                 "name": "Counter Strike: Global Offsensive",
                 "description": "CSGO players number 1!",
                 "image_url": "http://media.steampowered.com/apps/csgo/blog/images/fb_image.png?v=6"

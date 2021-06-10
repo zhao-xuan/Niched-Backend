@@ -27,10 +27,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user_db = get_user_login_details(users_collection, user_name)
 
     if not user_db:
-        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail={"msg": "Incorrect username or password"})
 
     if not bcrypt.checkpw(password.encode("utf-8"), user_db.password.encode('utf-8')):
-        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail={"msg": "Incorrect username or password"})
 
     user_no_passwd = UserDetails(**user_db.dict(exclude={"password"}))
     token = create_access_token(user_no_passwd, ACCESS_TOKEN_EXPIRE_MINS, ACCESS_TOKEN_SECRET_KEY)
@@ -43,7 +43,7 @@ def signup(user_name: str = Form(..., description="Unique account username, used
     users_collection = conn.get_users_collection()
 
     if get_user_login_details(users_collection, user_name) is not None:
-        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Username already exists")
+        raise HTTPException(status_code=HTTP_409_CONFLICT, detail={"msg": "Username already exists"})
 
     hash_pwd = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     user_details = UserDetails(user_name=user_name)
@@ -53,4 +53,4 @@ def signup(user_name: str = Form(..., description="Unique account username, used
         return user_details
 
     raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail="User creation failed! Please try again later!")
+                        detail={"msg": "User creation failed! Please try again later!"})

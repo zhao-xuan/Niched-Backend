@@ -10,9 +10,11 @@ from niched.database.event_utils import get_events_by_group
 from niched.database.group_utils import create_group, get_group, check_group_id_exist, group_add_new_member, \
     check_member_in_group, group_remove_member, InvalidGroupOperation
 from niched.database.mongo import conn
+from niched.database.thread_utils import convert_db_thread_to_out
 from niched.database.user_utils import check_user_id_exist
 from niched.models.schema.events import EventOut
 from niched.models.schema.groups import GroupDataDB, NewGroupIn, GroupMemberIn
+from niched.models.schema.threads import ThreadOut
 
 router = APIRouter()
 
@@ -65,7 +67,7 @@ def get_all_events_in_group(group_id: str):
 
 
 @router.post("/{group_id}/members/", status_code=HTTP_201_CREATED, name="group:addMember")
-def get_all_members_in_group(group_id: str, new_member: GroupMemberIn):
+def add_member_to_group(group_id: str, new_member: GroupMemberIn):
     groups_collection = conn.get_groups_collection()
     users_collection = conn.get_users_collection()
 
@@ -86,7 +88,7 @@ def get_all_members_in_group(group_id: str, new_member: GroupMemberIn):
 
 
 @router.delete("/{group_id}/members/", status_code=HTTP_200_OK, name="group:removeMember")
-def get_all_members_in_group(group_id: str, new_member: GroupMemberIn):
+def get_member_in_group(group_id: str, new_member: GroupMemberIn):
     groups_collection = conn.get_groups_collection()
     users_collection = conn.get_users_collection()
 
@@ -108,3 +110,20 @@ def get_all_members_in_group(group_id: str, new_member: GroupMemberIn):
                             detail=e.message)
 
     return JSONResponse(status_code=HTTP_200_OK, content={"detail": "User removed from group successfully"})
+
+
+@router.get("/{group_id}/threads/", response_model=List[ThreadOut], status_code=HTTP_200_OK, name="group:getAllThreads")
+def get_all_threads_in_group(group_id: str):
+    threads_collection = conn.get_threads_collection()
+    groups_collection = conn.get_groups_collection()
+
+    if not check_group_id_exist(groups_collection, group_id):
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Group ID not found!")
+
+    try:
+        raw_threads = threads_collection.find({"group_id": group_id})
+        return [convert_db_thread_to_out(thread) for thread in raw_threads]
+    except Exception as e:
+        logger.error(f"Server crashed while trying to retrieve threads from group {group_id}, exception raised {e}")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Server crashed while trying to retrieve threads")

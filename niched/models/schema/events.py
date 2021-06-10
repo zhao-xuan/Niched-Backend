@@ -31,3 +31,16 @@ class EventDB(EventIn):
 
 class EventOut(EventDB):
     event_id: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "group_id": "csgo",
+                "event_id": "60bf5d2433989999921a476c",
+                "title": "LAN party 5v5",
+                "description": "ICL vs UCL BO5",
+                "tags": ["csgo", "esports", "icl", "ucl"],
+                "author_id": "london_esports_comm",
+                "event_time": "2021-06-04T13:00:00"
+            }
+        }

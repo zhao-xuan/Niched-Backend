@@ -32,7 +32,7 @@ def get_group_with_id(group_id: str):
     groups_collection = conn.get_groups_collection()
     group_data = get_group(groups_collection, group_id)
     if group_data is None:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Group does not exist")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "Group does not exist"})
 
     return group_data
 
@@ -45,12 +45,12 @@ def create_new_group(group_details: NewGroupIn):
         group_details.image_url = None
 
     if check_group_id_exist(groups_collection, group_details.group_id):
-        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Group ID already in used!")
+        raise HTTPException(status_code=HTTP_409_CONFLICT, detail={"msg": "Group ID already in used!"})
 
     if not create_group(groups_collection, group_details):
         logger.error(f"Cannot create new group with details {group_details.dict()}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Unexpected Error! Server failed to create new group")
+                            detail={"msg": "Unexpected Error! Server failed to create new group"})
 
     return group_details
 
@@ -61,7 +61,7 @@ def get_all_events_in_group(group_id: str):
     events_collection = conn.get_events_collection()
 
     if not check_group_id_exist(groups_collection, group_id):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Group ID not found!")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "Group ID not found!"})
 
     return get_events_by_group(events_collection, group_id)
 
@@ -72,19 +72,19 @@ def add_member_to_group(group_id: str, new_member: GroupMemberIn):
     users_collection = conn.get_users_collection()
 
     if not check_group_id_exist(groups_collection, group_id):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Group ID not found!")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "Group ID not found!"})
 
     if not check_user_id_exist(users_collection, new_member.user_name):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User ID does not exist!")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "User ID does not exist!"})
 
     if check_member_in_group(groups_collection, group_id, new_member.user_name):
-        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="User already in group")
+        raise HTTPException(status_code=HTTP_409_CONFLICT, detail={"msg": "User already in group"})
 
     if not group_add_new_member(groups_collection, users_collection, group_id, new_member):
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Server failed to process request, check logs for more detail")
+                            detail={"msg": "Server failed to process request, check logs for more detail"})
 
-    return JSONResponse(status_code=HTTP_201_CREATED, content={"detail": "User added to group successfully"})
+    return JSONResponse(status_code=HTTP_201_CREATED, content={"detail": {"msg": "User added to group successfully"}})
 
 
 @router.delete("/{group_id}/members/", status_code=HTTP_200_OK, name="group:removeMember")
@@ -93,23 +93,23 @@ def get_member_in_group(group_id: str, new_member: GroupMemberIn):
     users_collection = conn.get_users_collection()
 
     if not check_group_id_exist(groups_collection, group_id):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Group ID not found!")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "Group ID not found!"})
 
     if not check_user_id_exist(users_collection, new_member.user_name):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User ID does not exist!")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "User ID does not exist!"})
 
     if not check_member_in_group(groups_collection, group_id, new_member.user_name):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User is not in group")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "User is not in group"})
 
     try:
         if not group_remove_member(groups_collection, users_collection, group_id, new_member):
             raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                                detail="Server failed to process request, check logs for more detail")
+                                detail={"msg": "Server failed to process request, check logs for more detail"})
     except InvalidGroupOperation as e:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED,
                             detail=e.message)
 
-    return JSONResponse(status_code=HTTP_200_OK, content={"detail": "User removed from group successfully"})
+    return JSONResponse(status_code=HTTP_200_OK, content={"detail": {"msg": "User removed from group successfully"}})
 
 
 @router.get("/{group_id}/threads/", response_model=List[ThreadOut], status_code=HTTP_200_OK, name="group:getAllThreads")
@@ -118,7 +118,7 @@ def get_all_threads_in_group(group_id: str):
     groups_collection = conn.get_groups_collection()
 
     if not check_group_id_exist(groups_collection, group_id):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Group ID not found!")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "Group ID not found!"})
 
     try:
         raw_threads = threads_collection.find({"group_id": group_id})
@@ -126,4 +126,4 @@ def get_all_threads_in_group(group_id: str):
     except Exception as e:
         logger.error(f"Server crashed while trying to retrieve threads from group {group_id}, exception raised {e}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Server crashed while trying to retrieve threads")
+                            detail={"msg": "Server crashed while trying to retrieve threads"})

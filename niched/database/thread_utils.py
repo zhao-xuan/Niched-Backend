@@ -37,4 +37,3 @@ def remove_thread(threads_collection: Collection, thread_id: str) -> bool:
     thread_query = {"_id": ObjectId(thread_id)}
     res = threads_collection.delete_one(thread_query)
     return res.deleted_count > 0
-

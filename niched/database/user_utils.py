@@ -19,7 +19,8 @@ def get_user_profile(users_coll: Collection, user_name: str) -> UserDetails:
     return UserDetails(**user_db_json)
 
 
-def update_user_profile(users_coll: Collection, user_name: str, new_details: UserDetailsUpdate) -> Optional[UserDetails]:
+def update_user_profile(users_coll: Collection, user_name: str, new_details: UserDetailsUpdate) -> Optional[
+    UserDetails]:
     user_query = {"user_name": user_name}
     new_values = new_details.dict(exclude_none=True)
     new_values_query = {"$set": new_values}

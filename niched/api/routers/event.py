@@ -17,7 +17,7 @@ def new_event(event_data: EventIn):
 
     if not event:
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Failed to create event, check logs for more detail!")
+                            detail={"msg": "Failed to create event, check logs for more detail!"})
 
     return event
 
@@ -28,11 +28,11 @@ def get_event_by_id(event_id: str):
 
     if not check_event_id_exist(event_coll, event_id):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND,
-                            detail="Invalid event id")
+                            detail={"msg": "Invalid event id"})
 
     event_details = get_event_with_id(event_coll, event_id)
     if event_details is None:
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Server has encountered an error while trying to find event")
+                            detail={"msg": "Server has encountered an error while trying to find event"})
 
     return event_details

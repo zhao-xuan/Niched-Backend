@@ -10,19 +10,28 @@ from niched.models.schema.events import EventIn, EventOut, EventDB
 logger = logging.getLogger(__name__)
 
 
-def create_event(events_collection: Collection, event: EventIn) -> Optional[EventOut]:
+class EventException(Exception):
+    """ Exceptions for event """
+
+
+class InvalidEventException(EventException):
+    """Exceptions in Event"""
+
+    def __init__(self, message):
+        self.message = message
+
+
+def create_event(events_collection: Collection, event: EventIn) -> EventOut:
     event_db = EventDB(
         **event.dict(),
         creation_time=datetime.utcnow(),
     )
 
-    try:
-        result = events_collection.insert_one(event_db.dict())
-        logger.info(f"Event {str(result.inserted_id)} created successfully!")
-        return EventOut(event_id=str(result.inserted_id), **event_db.dict())
-    except Exception as e:
-        logger.error(f"Cannot create event [{event.title}] in group [{event.group_id}], exception raised {e}")
-        return None
+    result = events_collection.insert_one(event_db.dict())
+    logger.info(f"Event {str(result.inserted_id)} created successfully!")
+    if event.event_time <= datetime.now():
+        raise InvalidEventException("Cannot create event in the past")
+    return EventOut(event_id=str(result.inserted_id), **event_db.dict())
 
 
 def get_events_by_group(events_collection: Collection, group_id: str) -> List[EventOut]:

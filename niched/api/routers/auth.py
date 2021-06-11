@@ -34,7 +34,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
     user_no_passwd = UserDetails(**user_db.dict(exclude={"password"}))
     token = create_access_token(user_no_passwd, ACCESS_TOKEN_EXPIRE_MINS, ACCESS_TOKEN_SECRET_KEY)
-    return UserToken(access_token=token, token_type="bearer")
+    return UserToken(access_token=token, token_type="bearer", user_details=user_no_passwd)
 
 
 @router.post("/signup", status_code=HTTP_201_CREATED, response_model=UserDetails, name="auth:signup")

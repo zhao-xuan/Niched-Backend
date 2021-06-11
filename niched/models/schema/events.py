@@ -9,7 +9,7 @@ class EventIn(BaseModel):
     title: str
     description: str
     tags: List[str]
-    author_id: Optional[str]
+    author_id: str
     event_time: datetime
 
     class Config:
@@ -19,7 +19,7 @@ class EventIn(BaseModel):
                 "title": "LAN party 5v5",
                 "description": "ICL vs UCL BO5",
                 "tags": ["csgo", "esports", "icl", "ucl"],
-                "author_id": "london_esports_comm",
+                "author_id": "bob",
                 "event_time": "2021-06-04T13:00:00"
             }
         }
@@ -40,7 +40,7 @@ class EventOut(EventDB):
                 "title": "LAN party 5v5",
                 "description": "ICL vs UCL BO5",
                 "tags": ["csgo", "esports", "icl", "ucl"],
-                "author_id": "london_esports_comm",
+                "author_id": "bob",
                 "event_time": "2021-06-04T13:00:00"
             }
         }

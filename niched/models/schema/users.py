@@ -6,6 +6,7 @@ from pydantic import BaseModel, EmailStr
 class UserToken(BaseModel):
     access_token: str
     token_type: str
+    user_details: UserDetails
 
 
 class UserDetails(BaseModel):

@@ -3,12 +3,6 @@ from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 
 
-class UserToken(BaseModel):
-    access_token: str
-    token_type: str
-    user_details: UserDetails
-
-
 class UserDetails(BaseModel):
     user_name: str
     email: Optional[EmailStr]
@@ -24,6 +18,10 @@ class UserDetails(BaseModel):
             }
         }
 
+class UserToken(BaseModel):
+    access_token: str
+    token_type: str
+    user_details: UserDetails
 
 class UserDetailsDB(UserDetails):
     password: str

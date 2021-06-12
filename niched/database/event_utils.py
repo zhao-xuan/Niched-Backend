@@ -27,10 +27,11 @@ def create_event(events_collection: Collection, event: EventIn) -> EventOut:
         creation_time=datetime.utcnow(),
     )
 
-    result = events_collection.insert_one(event_db.dict())
-    logger.info(f"Event {str(result.inserted_id)} created successfully!")
     if event.event_time <= datetime.now():
         raise InvalidEventException("Cannot create event in the past")
+
+    result = events_collection.insert_one(event_db.dict())
+    logger.info(f"Event {str(result.inserted_id)} created successfully!")
     return EventOut(event_id=str(result.inserted_id), **event_db.dict())
 
 

@@ -14,14 +14,19 @@ class UserDetails(BaseModel):
         schema_extra = {
             "example": {
                 "user_name": "gavin-123-456",
-                "age": 50
+                "email": "gavin@gmail.com",
+                "age": 50,
+                "subscribed_groups": [],
+                "interests": [],
             }
         }
+
 
 class UserToken(BaseModel):
     access_token: str
     token_type: str
     user_details: UserDetails
+
 
 class UserDetailsDB(UserDetails):
     password: str

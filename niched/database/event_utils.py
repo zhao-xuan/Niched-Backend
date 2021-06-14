@@ -5,7 +5,7 @@ from typing import Optional, List
 from bson import ObjectId
 from pymongo.collection import Collection
 
-from niched.models.schema.events import EventIn, EventOut, EventDB
+from niched.models.schema.events import EventIn, EventOut, EventDB, EventMembers, EventMemberIn, EventMembersGroup
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ def create_event(events_collection: Collection, event: EventIn) -> EventOut:
     event_db = EventDB(
         **event.dict(),
         creation_time=datetime.utcnow(),
+        members=EventMembers(going=[], interested=[])
     )
 
     if event.event_time <= datetime.now():
@@ -57,4 +58,20 @@ def get_event_with_id(events_collection: Collection, event_id: str) -> Optional[
 
 
 def check_event_id_exist(events_collection: Collection, event_id: str) -> bool:
-    return events_collection.count_documents({"_id": ObjectId(event_id)})
+    return ObjectId.is_valid(event_id) and events_collection.count_documents({"_id": ObjectId(event_id)}) > 0
+
+
+def add_event_member(events_collection: Collection, event_id: str, member: EventMemberIn) -> bool:
+    for event_group in EventMembersGroup:
+        events_collection.update_one({"_id": ObjectId(event_id)},
+                                     {"$pull": {f"members.{event_group}": member.user_name}})
+
+    res = events_collection.update_one({"_id": ObjectId(event_id)},
+                                       {"$addToSet": {f"members.{member.group}": member.user_name}})
+    return res.matched_count > 0
+
+
+def remove_event_member(events_collection: Collection, event_id: str, member: EventMemberIn) -> bool:
+    res = events_collection.update_one({"_id": ObjectId(event_id)},
+                                       {"$pull": {f"members.{member.group}": member.user_name}})
+    return res.matched_count > 0

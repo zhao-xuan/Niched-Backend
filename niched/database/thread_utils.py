@@ -29,7 +29,7 @@ def get_thread(threads_collection: Collection, thread_id: str) -> ThreadOut:
 
 
 def check_thread_id_exist(thread_collection: Collection, thread_id: str) -> bool:
-    return thread_collection.count_documents({"id": ObjectId(thread_id)}) > 0
+    return ObjectId.is_valid(thread_id) and thread_collection.count_documents({"_id": ObjectId(thread_id)}) > 0
 
 
 def remove_thread(threads_collection: Collection, thread_id: str) -> bool:

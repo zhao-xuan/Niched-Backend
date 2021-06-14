@@ -26,7 +26,7 @@ class EventIn(BaseModel):
     description: str
     tags: List[str]
     author_id: str
-    event_time: datetime
+    event_date: datetime
 
     class Config:
         schema_extra = {
@@ -36,14 +36,14 @@ class EventIn(BaseModel):
                 "description": "ICL vs UCL BO5",
                 "tags": ["csgo", "esports", "icl", "ucl"],
                 "author_id": "bob",
-                "event_time": "2021-06-04T13:00:00"
+                "event_date": "2021-06-04T13:00:00"
             }
         }
 
 
 class EventDB(EventIn):
     members: EventMembers
-    creation_time: datetime
+    creation_date: datetime
 
 
 class EventOut(EventDB):
@@ -58,7 +58,8 @@ class EventOut(EventDB):
                 "description": "ICL vs UCL BO5",
                 "tags": ["csgo", "esports", "icl", "ucl"],
                 "author_id": "bob",
-                "event_time": "2021-06-04T13:00:00",
+                "event_date": "2021-06-04T13:00:00",
+                "creation_date": "2021-06-12T20:18:20.454000",
                 "members": {
                     "going": ["gavin", "leo"],
                     "interested": ["tom", "alice"]

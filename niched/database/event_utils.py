@@ -24,11 +24,11 @@ class InvalidEventException(EventException):
 def create_event(events_collection: Collection, event: EventIn) -> EventOut:
     event_db = EventDB(
         **event.dict(),
-        creation_time=datetime.utcnow(),
+        creation_date=datetime.utcnow(),
         members=EventMembers(going=[], interested=[])
     )
 
-    if event.event_time <= datetime.now():
+    if event.event_date <= datetime.now():
         raise InvalidEventException("Cannot create event in the past")
 
     result = events_collection.insert_one(event_db.dict())

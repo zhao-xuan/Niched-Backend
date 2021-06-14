@@ -101,7 +101,7 @@ def group_remove_member(groups: Collection, users: Collection, group_id: str, us
 
     users_json = users.update_one({"user_name": user.user_name}, {"$pull": {"subscribed_groups": group_id}})
     if users_json.modified_count == 0:
-        groups.update_one({"group_id": group_id}, {"pull": {"members": user.user_name}})
+        groups.update_one({"group_id": group_id}, {"$pull": {"members": user.user_name}})
         return False
 
     return True

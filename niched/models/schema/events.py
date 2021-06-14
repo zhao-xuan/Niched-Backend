@@ -1,7 +1,23 @@
 from datetime import datetime
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel
+
+
+class EventMembers(BaseModel):
+    going: List[str]
+    interested: List[str]
+
+
+class EventMembersGroup(str, Enum):
+    going = "going"
+    interested = "interested"
+
+
+class EventMemberIn(BaseModel):
+    user_name: str
+    group: EventMembersGroup
 
 
 class EventIn(BaseModel):
@@ -26,6 +42,7 @@ class EventIn(BaseModel):
 
 
 class EventDB(EventIn):
+    members: EventMembers
     creation_time: datetime
 
 
@@ -41,6 +58,10 @@ class EventOut(EventDB):
                 "description": "ICL vs UCL BO5",
                 "tags": ["csgo", "esports", "icl", "ucl"],
                 "author_id": "bob",
-                "event_time": "2021-06-04T13:00:00"
+                "event_time": "2021-06-04T13:00:00",
+                "members": {
+                    "going": ["gavin", "leo"],
+                    "interested": ["tom", "alice"]
+                }
             }
         }

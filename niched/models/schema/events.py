@@ -59,6 +59,7 @@ class EventOut(EventDB):
                 "tags": ["csgo", "esports", "icl", "ucl"],
                 "author_id": "bob",
                 "event_date": "2021-06-04T13:00:00",
+                "creation_date": "2021-06-12T20:18:20.454000",
                 "members": {
                     "going": ["gavin", "leo"],
                     "interested": ["tom", "alice"]

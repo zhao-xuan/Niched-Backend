@@ -40,7 +40,7 @@ def create_new_thread(thread_details: ThreadIn):
 def get_thread_with_id(thread_id: str):
     threads_collection = conn.get_threads_collection()
 
-    if check_thread_id_exist(threads_collection, thread_id):
+    if not check_thread_id_exist(threads_collection, thread_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Thread ID does not exist"})
 
     try:
@@ -55,7 +55,7 @@ def get_thread_with_id(thread_id: str):
 def remove_thread_with_id(thread_id: str):
     threads_collection = conn.get_threads_collection()
 
-    if check_thread_id_exist(threads_collection, thread_id):
+    if not check_thread_id_exist(threads_collection, thread_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Thread ID does not exist"})
 
     if remove_thread(threads_collection, thread_id):

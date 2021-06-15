@@ -39,7 +39,7 @@ def create_new_thread(thread_details: ThreadIn):
                             detail={"msg": "Server failed to create new thread"})
 
 
-@router.get("/{thread_id}/", response_model=ThreadOut, status_code=HTTP_200_OK, name="thread:getByID")
+@router.get("/{thread_id}", response_model=ThreadOut, status_code=HTTP_200_OK, name="thread:getByID")
 def get_thread_with_id(thread_id: str):
     threads_collection = conn.get_threads_collection()
 
@@ -54,7 +54,7 @@ def get_thread_with_id(thread_id: str):
                             detail={"msg": "Server failed to create new thread"})
 
 
-@router.delete("/{thread_id}/", status_code=HTTP_200_OK, name="thread:remove")
+@router.delete("/{thread_id}", status_code=HTTP_200_OK, name="thread:remove")
 def remove_thread_with_id(thread_id: str):
     threads_collection = conn.get_threads_collection()
 

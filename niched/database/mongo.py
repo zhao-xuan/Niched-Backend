@@ -37,5 +37,8 @@ class MongoConnection:
     def get_events_collection():
         return MongoConnection.db["events"]
 
+    @staticmethod
+    def get_comments_collection():
+        return MongoConnection.db["comments"]
 
 conn = MongoConnection()

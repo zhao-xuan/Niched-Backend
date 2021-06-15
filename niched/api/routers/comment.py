@@ -4,10 +4,10 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_200_OK, HTTP_500_INTERNAL_SERVER_ERROR
 
-from niched.database.comment_utils import create_comment, check_comment_id_exist, remove_comment
+from niched.database.comment_utils import create_comment, check_comment_id_exist, remove_comment, get_comment_with_id
 from niched.database.mongo import conn
 from niched.database.thread_utils import check_thread_id_exist
-from niched.models.schema.comments import CommentIn
+from niched.models.schema.comments import CommentIn, CommentOut
 
 router = APIRouter()
 
@@ -23,6 +23,21 @@ def post_comment_to_thread(comment: CommentIn):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Thread ID does not exist"})
 
     return create_comment(comments_collection, comment)
+
+
+@router.get("/{comment_id}", response_model=CommentOut, status_code=HTTP_200_OK, name="comment:getComment")
+def post_comment_to_thread(comment_id: str):
+    comments_collection = conn.get_comments_collection()
+
+    if not check_comment_id_exist(comments_collection, comment_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Comment ID does not exist"})
+
+    comment_details = get_comment_with_id(comments_collection, comment_id)
+    if comment_details is None:
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail={"msg": "Server has encountered an error while trying to find comment"})
+
+    return comment_details
 
 
 @router.delete("/{comment_id}", name="comment:deleteComment")

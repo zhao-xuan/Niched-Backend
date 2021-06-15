@@ -35,14 +35,12 @@ class UserDetailsDB(UserDetails):
 class UserDetailsUpdate(BaseModel):
     email: Optional[EmailStr]
     age: Optional[int]
-    subscribed_groups: Optional[List[str]]
     interests: Optional[List[str]]
 
     class Config:
         schema_extra = {
             "example": {
                 "age": 50,
-                "subscribed_groups": ["ramen", "csgo"],
                 "interests": ["badminton", "php", "js"]
             }
         }

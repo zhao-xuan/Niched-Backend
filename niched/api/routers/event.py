@@ -68,6 +68,7 @@ def add_member_to_event(event_id: str, member: EventMemberIn):
                             })
     return HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Server failed to process request"})
 
+
 @router.delete("/{event_id}/members", status_code=HTTP_200_OK, name="event:removeMember")
 def add_member_to_event(event_id: str, member: EventMemberIn):
     event_coll = conn.get_events_collection()

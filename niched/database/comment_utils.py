@@ -35,6 +35,11 @@ def create_comment(comments_coll: Collection, comment: CommentIn) -> CommentOut:
     return CommentOut(comment_id=str(result.inserted_id), creation_date=comment_db.creation_date, **comment.dict())
 
 
+def get_comment_with_id(comments_coll: Collection, comment_id: str) -> CommentOut:
+    result = comments_coll.find_one({"_id": ObjectId(comment_id)})
+    return convert_comment_db_to_out(result)
+
+
 def remove_comment(comments_coll: Collection, comment_id: str):
     res = comments_coll.delete_one({"_id": ObjectId(comment_id)})
     return res.deleted_count > 0

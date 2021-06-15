@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import List
 
 from bson.objectid import ObjectId
 from pymongo.collection import Collection
@@ -37,3 +38,8 @@ def remove_thread(threads_collection: Collection, thread_id: str) -> bool:
     thread_query = {"_id": ObjectId(thread_id)}
     res = threads_collection.delete_one(thread_query)
     return res.deleted_count > 0
+
+
+def get_all_thread_in_group(threads_collection: Collection, group_id: str) -> List[ThreadOut]:
+    raw_threads = threads_collection.find({"group_id": group_id})
+    return [convert_db_thread_to_out(thread) for thread in raw_threads]

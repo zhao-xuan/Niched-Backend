@@ -10,7 +10,7 @@ from niched.database.event_utils import get_events_by_group
 from niched.database.group_utils import create_group, get_group, check_group_id_exist, group_add_new_member, \
     check_member_in_group, group_remove_member, InvalidGroupOperation
 from niched.database.mongo import conn
-from niched.database.thread_utils import convert_db_thread_to_out
+from niched.database.thread_utils import get_all_thread_in_group
 from niched.database.user_utils import check_user_id_exist
 from niched.models.schema.events import EventOut
 from niched.models.schema.groups import GroupDataDB, NewGroupIn, GroupMemberIn
@@ -121,8 +121,7 @@ def get_all_threads_in_group(group_id: str):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "Group ID not found!"})
 
     try:
-        raw_threads = threads_collection.find({"group_id": group_id})
-        return [convert_db_thread_to_out(thread) for thread in raw_threads]
+        return get_all_thread_in_group(threads_collection, group_id)
     except Exception as e:
         logger.error(f"Server crashed while trying to retrieve threads from group {group_id}, exception raised {e}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,

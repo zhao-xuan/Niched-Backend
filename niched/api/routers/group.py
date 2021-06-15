@@ -66,7 +66,7 @@ def get_all_events_in_group(group_id: str):
     return get_events_by_group(events_collection, group_id)
 
 
-@router.post("/{group_id}/members/", status_code=HTTP_201_CREATED, name="group:addMember")
+@router.post("/{group_id}/members", status_code=HTTP_201_CREATED, name="group:addMember")
 def add_member_to_group(group_id: str, new_member: GroupMemberIn):
     groups_collection = conn.get_groups_collection()
     users_collection = conn.get_users_collection()
@@ -87,7 +87,7 @@ def add_member_to_group(group_id: str, new_member: GroupMemberIn):
     return JSONResponse(status_code=HTTP_201_CREATED, content={"detail": {"msg": "User added to group successfully"}})
 
 
-@router.delete("/{group_id}/members/", status_code=HTTP_200_OK, name="group:removeMember")
+@router.delete("/{group_id}/members", status_code=HTTP_200_OK, name="group:removeMember")
 def get_member_in_group(group_id: str, new_member: GroupMemberIn):
     groups_collection = conn.get_groups_collection()
     users_collection = conn.get_users_collection()
@@ -112,7 +112,7 @@ def get_member_in_group(group_id: str, new_member: GroupMemberIn):
     return JSONResponse(status_code=HTTP_200_OK, content={"detail": {"msg": "User removed from group successfully"}})
 
 
-@router.get("/{group_id}/threads/", response_model=List[ThreadOut], status_code=HTTP_200_OK, name="group:getAllThreads")
+@router.get("/{group_id}/threads", response_model=List[ThreadOut], status_code=HTTP_200_OK, name="group:getAllThreads")
 def get_all_threads_in_group(group_id: str):
     threads_collection = conn.get_threads_collection()
     groups_collection = conn.get_groups_collection()

@@ -41,7 +41,7 @@ def update_user_profile(users_coll: Collection, user_name: str, new_details: Use
 
 def get_user_events(users_coll: Collection, events_coll: Collection, user_name: str, limit: int = 5) -> List[EventOut]:
     user = users_coll.find_one({"user_name": user_name})
-    event_ids = [ObjectId(e) for e in user["events"]]
+    event_ids = user["events"]
 
     matching_events = events_coll.find({"_id": {"$in": event_ids}}).sort('event_date', pymongo.DESCENDING).limit(limit)
 

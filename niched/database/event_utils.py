@@ -61,17 +61,30 @@ def check_event_id_exist(events_collection: Collection, event_id: str) -> bool:
     return ObjectId.is_valid(event_id) and events_collection.count_documents({"_id": ObjectId(event_id)}) > 0
 
 
-def add_event_member(events_collection: Collection, event_id: str, member: EventMemberIn) -> bool:
+def add_event_member(events_collection: Collection, users_collection: Collection, event_id: str,
+                     member: EventMemberIn) -> bool:
     for event_group in EventMembersGroup:
         events_collection.update_one({"_id": ObjectId(event_id)},
                                      {"$pull": {f"members.{event_group}": member.user_name}})
 
-    res = events_collection.update_one({"_id": ObjectId(event_id)},
-                                       {"$addToSet": {f"members.{member.group}": member.user_name}})
-    return res.matched_count > 0
+    event_res = events_collection.update_one({"_id": ObjectId(event_id)},
+                                             {"$addToSet": {f"members.{member.group}": member.user_name}})
+
+    if event_res.modified_count == 0:
+        return False
+
+    user_res = users_collection.update_one({"user_name": member.user_name}, {"$push": {"events": event_id}})
+    if user_res.modified_count == 0:
+        remove_event_member(events_collection, users_collection, event_id, member)
+        return False
+
+    return True
 
 
-def remove_event_member(events_collection: Collection, event_id: str, member: EventMemberIn) -> bool:
-    res = events_collection.update_one({"_id": ObjectId(event_id)},
-                                       {"$pull": {f"members.{member.group}": member.user_name}})
-    return res.matched_count > 0
+def remove_event_member(events_collection: Collection, users_collection: Collection, event_id: str,
+                        member: EventMemberIn) -> bool:
+    event_res = events_collection.update_one({"_id": ObjectId(event_id)},
+                                             {"$pull": {f"members.{member.group}": member.user_name}})
+
+    user_res = users_collection.update_one({"user_name": member.user_name}, {"$pull": {"events": event_id}})
+    return event_res.matched_count > 0 and user_res.matched_count > 0

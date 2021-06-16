@@ -10,6 +10,7 @@ class NewGroupIn(BaseModel):
     name: constr(min_length=1, max_length=50)
     description: constr(min_length=0, max_length=120)
     image_url: Optional[Union[HttpUrl, constr(min_length=0, max_length=0)]]
+    tags: Optional[List[str]] = []
 
     class Config:
         schema_extra = {

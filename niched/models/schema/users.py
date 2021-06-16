@@ -19,6 +19,7 @@ class UserDetails(BaseModel):
                 "age": 50,
                 "subscribed_groups": [],
                 "interests": [],
+                "events": []
             }
         }
 

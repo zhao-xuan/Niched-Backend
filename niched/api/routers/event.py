@@ -23,7 +23,7 @@ def new_event(event_data: EventIn):
                             detail={"msg": "Invalid user ID!"})
 
     try:
-        event = create_event(event_coll, event_data)
+        event = create_event(event_coll, users_coll, event_data)
         return event
     except InvalidEventException as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST,

@@ -9,6 +9,7 @@ class UserDetails(BaseModel):
     age: Optional[int]
     subscribed_groups: List[str] = []
     interests: List[str] = []
+    events: List[str] = []
 
     class Config:
         schema_extra = {

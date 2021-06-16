@@ -1,8 +1,11 @@
 import logging
-from typing import Optional
+from typing import Optional, List
 
+import pymongo
+from bson import ObjectId
 from pymongo.collection import Collection
 
+from niched.models.schema.events import EventOut
 from niched.models.schema.users import UserDetails, UserDetailsUpdate
 
 logger = logging.getLogger(__name__)
@@ -34,3 +37,12 @@ def update_user_profile(users_coll: Collection, user_name: str, new_details: Use
     del new_user_details_json["password"]
 
     return UserDetails(**new_user_details_json)
+
+
+def get_user_events(users_coll: Collection, events_coll: Collection, user_name: str, limit: int = 5) -> List[EventOut]:
+    user = users_coll.find_one({"user_name": user_name})
+    event_ids = [ObjectId(e) for e in user["events"]]
+
+    matching_events = events_coll.find({"_id": {"$in": event_ids}}).sort('event_date', pymongo.DESCENDING).limit(limit)
+
+    return [EventOut(event_id=str(e['_id']), **e) for e in matching_events]

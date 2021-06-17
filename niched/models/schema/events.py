@@ -1,7 +1,23 @@
 from datetime import datetime
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel
+
+
+class EventMembers(BaseModel):
+    going: List[str]
+    interested: List[str]
+
+
+class EventMembersGroup(str, Enum):
+    going = "going"
+    interested = "interested"
+
+
+class EventMemberIn(BaseModel):
+    user_name: str
+    group: EventMembersGroup
 
 
 class EventIn(BaseModel):
@@ -9,8 +25,8 @@ class EventIn(BaseModel):
     title: str
     description: str
     tags: List[str]
-    author_id: Optional[str]
-    event_time: datetime
+    author_id: str
+    event_date: datetime
 
     class Config:
         schema_extra = {
@@ -19,15 +35,34 @@ class EventIn(BaseModel):
                 "title": "LAN party 5v5",
                 "description": "ICL vs UCL BO5",
                 "tags": ["csgo", "esports", "icl", "ucl"],
-                "author_id": "london_esports_comm",
-                "event_time": "2021-06-04T13:00:00"
+                "author_id": "bob",
+                "event_date": "2021-06-04T13:00:00"
             }
         }
 
 
 class EventDB(EventIn):
-    creation_time: datetime
+    members: EventMembers
+    creation_date: datetime
 
 
 class EventOut(EventDB):
     event_id: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "group_id": "csgo",
+                "event_id": "60bf5d2433989999921a476c",
+                "title": "LAN party 5v5",
+                "description": "ICL vs UCL BO5",
+                "tags": ["csgo", "esports", "icl", "ucl"],
+                "author_id": "bob",
+                "event_date": "2021-06-04T13:00:00",
+                "creation_date": "2021-06-12T20:18:20.454000",
+                "members": {
+                    "going": ["gavin", "leo"],
+                    "interested": ["tom", "alice"]
+                }
+            }
+        }

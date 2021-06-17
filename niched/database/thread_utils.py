@@ -1,48 +1,45 @@
 import logging
 from datetime import datetime
-from typing import Optional, List
+from typing import List
 
 from bson.objectid import ObjectId
 from pymongo.collection import Collection
 
-from niched.models.schema.threads import ThreadFormData, ThreadDataDB
+from niched.models.schema.threads import ThreadIn, ThreadDB, ThreadOut
 
 logger = logging.getLogger(__name__)
 
 
+def convert_db_thread_to_out(raw_json) -> ThreadOut:
+    return ThreadOut(**raw_json, thread_id=str(raw_json["_id"]))
 
-def create_thread(threads_collection: Collection, thread_details: ThreadFormData) -> str:
-    thread_data_insert = ThreadDataDB(
-        group_id=thread_details.group_id,
-        title=thread_details.title,
-        description=thread_details.description,
-        creation_date=datetime.utcnow())
 
+def create_thread(threads_collection: Collection, thread_details: ThreadIn) -> ThreadOut:
+    thread_data_insert = ThreadDB(**thread_details.dict(), creation_date=datetime.now())
     thread_dict = thread_data_insert.dict()
 
-    try:
-        # collection.insert returns the id of the new object inserted into the database
-        _id = threads_collection.insert(thread_dict)
-        logger.info(f"Thread {thread_details.title} created successfully!")
-        return _id
-    except Exception as e:
-        logger.error(f"Cannot create thread {thread_details.title}, exception raised {e}")
-        return ""
+    # collection.insert returns the id of the new object inserted into the database
+    thread_id = threads_collection.insert_one(thread_dict)
+    raw_thread = threads_collection.find_one({"_id": thread_id.inserted_id})
+    return convert_db_thread_to_out(raw_thread)
 
 
-def get_thread(threads_collection: Collection, thread_id: str) -> Optional[ThreadDataDB]:
-    try:
-        thread_json = threads_collection.find_one({"_id": ObjectId(thread_id)})
-        return ThreadDataDB(**thread_json) if thread_json else None
-    except Exception as e:
-        logger.error(f"Exception raised when fetching thread {thread_id}: {e}")
-        return None
+def get_thread(threads_collection: Collection, thread_id: str) -> ThreadOut:
+    raw_thread = threads_collection.find_one({"_id": ObjectId(thread_id)})
+    return convert_db_thread_to_out(raw_thread)
 
 
-# def get_all_groups_in_db(groups: Collection) -> List[GroupDataDB]:
-#     try:
-#         groups = groups.find({})
-#         return [group for group in groups]
-#     except Exception as e:
-#         logger.error(f"Exception raised when fetching all groups in database {e} ")
-#         return []
+def check_thread_id_exist(thread_collection: Collection, thread_id: str) -> bool:
+    return ObjectId.is_valid(thread_id) and thread_collection.count_documents({"_id": ObjectId(thread_id)}) > 0
+
+
+def remove_thread(threads_collection: Collection, thread_id: str) -> bool:
+    """ [thread_id] should be valid"""
+    thread_query = {"_id": ObjectId(thread_id)}
+    res = threads_collection.delete_one(thread_query)
+    return res.deleted_count > 0
+
+
+def get_all_thread_in_group(threads_collection: Collection, group_id: str) -> List[ThreadOut]:
+    raw_threads = threads_collection.find({"group_id": group_id})
+    return [convert_db_thread_to_out(thread) for thread in raw_threads]

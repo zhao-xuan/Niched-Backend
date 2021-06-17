@@ -5,24 +5,35 @@ from typing import Optional, List
 from bson import ObjectId
 from pymongo.collection import Collection
 
-from niched.models.schema.events import EventIn, EventOut, EventDB
+from niched.models.schema.events import EventIn, EventOut, EventDB, EventMembers, EventMemberIn, EventMembersGroup
 
 logger = logging.getLogger(__name__)
 
 
-def create_event(events_collection: Collection, event: EventIn) -> Optional[EventOut]:
+class EventException(Exception):
+    """ Exceptions for event """
+
+
+class InvalidEventException(EventException):
+    """Exceptions in Event"""
+
+    def __init__(self, message):
+        self.message = message
+
+
+def create_event(events_collection: Collection, event: EventIn) -> EventOut:
     event_db = EventDB(
         **event.dict(),
-        creation_time=datetime.utcnow(),
+        creation_date=datetime.utcnow(),
+        members=EventMembers(going=[], interested=[])
     )
 
-    try:
-        result = events_collection.insert_one(event_db.dict())
-        logger.info(f"Event {str(result.inserted_id)} created successfully!")
-        return EventOut(event_id=str(result.inserted_id), **event_db.dict())
-    except Exception as e:
-        logger.error(f"Cannot create event [{event.title}] in group [{event.group_id}], exception raised {e}")
-        return None
+    if event.event_date <= datetime.now():
+        raise InvalidEventException("Cannot create event in the past")
+
+    result = events_collection.insert_one(event_db.dict())
+    logger.info(f"Event {str(result.inserted_id)} created successfully!")
+    return EventOut(event_id=str(result.inserted_id), **event_db.dict())
 
 
 def get_events_by_group(events_collection: Collection, group_id: str) -> List[EventOut]:
@@ -47,4 +58,20 @@ def get_event_with_id(events_collection: Collection, event_id: str) -> Optional[
 
 
 def check_event_id_exist(events_collection: Collection, event_id: str) -> bool:
-    return events_collection.count_documents({"_id": ObjectId(event_id)})
+    return ObjectId.is_valid(event_id) and events_collection.count_documents({"_id": ObjectId(event_id)}) > 0
+
+
+def add_event_member(events_collection: Collection, event_id: str, member: EventMemberIn) -> bool:
+    for event_group in EventMembersGroup:
+        events_collection.update_one({"_id": ObjectId(event_id)},
+                                     {"$pull": {f"members.{event_group}": member.user_name}})
+
+    res = events_collection.update_one({"_id": ObjectId(event_id)},
+                                       {"$addToSet": {f"members.{member.group}": member.user_name}})
+    return res.matched_count > 0
+
+
+def remove_event_member(events_collection: Collection, event_id: str, member: EventMemberIn) -> bool:
+    res = events_collection.update_one({"_id": ObjectId(event_id)},
+                                       {"$pull": {f"members.{member.group}": member.user_name}})
+    return res.matched_count > 0

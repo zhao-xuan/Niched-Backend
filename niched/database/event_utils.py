@@ -63,19 +63,19 @@ def check_event_id_exist(events_collection: Collection, event_id: str) -> bool:
     return ObjectId.is_valid(event_id) and events_collection.count_documents({"_id": ObjectId(event_id)}) > 0
 
 
-def add_event_member(events_collection: Collection, event_id: str, member: EventMembersGroup,
+def add_event_member(events_collection: Collection, event_id: str, group: EventMembersGroup,
                      user: UserDetails) -> bool:
     for event_group in EventMembersGroup:
         events_collection.update_one({"_id": ObjectId(event_id)},
                                      {"$pull": {f"members.{event_group}": user.user_name}})
 
     res = events_collection.update_one({"_id": ObjectId(event_id)},
-                                       {"$addToSet": {f"members.{member.group}": user.user_name}})
+                                       {"$addToSet": {f"members.{group}": user.user_name}})
     return res.matched_count > 0
 
 
-def remove_event_member(events_collection: Collection, event_id: str, member: EventMembersGroup,
+def remove_event_member(events_collection: Collection, event_id: str, group: EventMembersGroup,
                         user: UserDetails) -> bool:
     res = events_collection.update_one({"_id": ObjectId(event_id)},
-                                       {"$pull": {f"members.{member.group}": user.user_name}})
+                                       {"$pull": {f"members.{group}": user.user_name}})
     return res.matched_count > 0

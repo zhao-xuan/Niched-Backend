@@ -56,7 +56,7 @@ def add_member_to_event(event_id: str, group: EventMembersGroup,
         return JSONResponse(status_code=HTTP_201_CREATED,
                             content={
                                 "detail": {
-                                    "msg": f"User @{current_user.user_name} added to {group.group.upper()}"
+                                    "msg": f"User @{current_user.user_name} added to {group.upper()}"
                                 }
                             })
     return HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Server failed to process request"})
@@ -75,7 +75,7 @@ def add_member_to_event(event_id: str, group: EventMembersGroup,
         return JSONResponse(status_code=HTTP_201_CREATED,
                             content={
                                 "detail": {
-                                    "msg": f"User @{group.user_name} removed from {group.group.upper()}"
+                                    "msg": f"User @{current_user.user_name} removed from {group.upper()}"
                                 }
                             })
     return HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail={"msg": "Server failed to process request"})

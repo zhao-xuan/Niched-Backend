@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from typing import Optional, List
 
+import pymongo
 from bson import ObjectId
 from pymongo.collection import Collection
 
@@ -34,6 +35,11 @@ def create_event(events_collection: Collection, event: EventIn) -> EventOut:
     result = events_collection.insert_one(event_db.dict())
     logger.info(f"Event {str(result.inserted_id)} created successfully!")
     return EventOut(event_id=str(result.inserted_id), **event_db.dict())
+
+
+def get_all_events(events_collection: Collection, skip: int, limit: int) -> List[EventOut]:
+    events = events_collection.find({}).sort("creation_date", pymongo.DESCENDING).skip(skip).limit(limit)
+    return [EventOut(event_id=str(e['_id']), **e) for e in events]
 
 
 def get_events_by_group(events_collection: Collection, group_id: str) -> List[EventOut]:

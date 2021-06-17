@@ -110,7 +110,3 @@ def group_remove_member(groups: Collection, users: Collection, group_id: str, us
 def find_groups_contain_tags(groups: Collection, targets: List[str], limit: int, skip: int) -> List[GroupDataDB]:
     res = groups.find({"tags": {"$in": targets}}).skip(skip).limit(limit)
     return [GroupDataDB(**g) for g in res]
-
-def find_groups_contain_tags(groups: Collection, query: List[str], limit: int, skip: int) -> List[GroupDataDB]:
-    res = groups.find({"tags": {"$in": targets}}).skip(skip).limit(limit)
-    return [GroupDataDB(**g) for g in res]

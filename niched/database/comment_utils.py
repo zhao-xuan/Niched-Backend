@@ -6,6 +6,7 @@ from bson import ObjectId
 from pymongo.collection import Collection
 
 from niched.models.schema.comments import CommentOut, CommentIn, CommentDB, OID
+from niched.models.schema.users import UserDetails
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +25,10 @@ def get_comments_in_thread(comments_coll: Collection, thread_id: str) -> List[Co
     return [convert_comment_db_to_out(comment) for comment in results]
 
 
-def create_comment(comments_coll: Collection, comment: CommentIn) -> CommentOut:
+def create_comment(comments_coll: Collection, comment: CommentIn, user: UserDetails) -> CommentOut:
     comment_db = CommentDB(
         **comment.dict(exclude={"thread_id"}),
+        user_name=user.user_name,
         thread_id=OID(comment.thread_id),
         creation_date=datetime.utcnow())
 

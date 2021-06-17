@@ -20,7 +20,6 @@ class OID(str):
 
 class CommentIn(BaseModel):
     thread_id: str
-    user_name: str
     body: str
 
 

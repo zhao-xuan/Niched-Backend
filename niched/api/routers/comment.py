@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_200_OK, HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -8,6 +8,8 @@ from niched.database.comment_utils import create_comment, check_comment_id_exist
 from niched.database.mongo import conn
 from niched.database.thread_utils import check_thread_id_exist
 from niched.models.schema.comments import CommentIn, CommentOut
+from niched.models.schema.users import UserDetails
+from niched.utilities.token import get_current_active_user
 
 router = APIRouter()
 
@@ -15,14 +17,14 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/", name="comment:postComment")
-def post_comment_to_thread(comment: CommentIn):
+def post_comment_to_thread(comment: CommentIn, current_user: UserDetails = Depends(get_current_active_user)):
     threads_collection = conn.get_threads_collection()
     comments_collection = conn.get_comments_collection()
 
     if not check_thread_id_exist(threads_collection, comment.thread_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Thread ID does not exist"})
 
-    return create_comment(comments_collection, comment)
+    return create_comment(comments_collection, comment, current_user)
 
 
 @router.get("/{comment_id}", response_model=CommentOut, status_code=HTTP_200_OK, name="comment:getComment")

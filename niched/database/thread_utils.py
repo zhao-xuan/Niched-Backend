@@ -6,6 +6,7 @@ from bson.objectid import ObjectId
 from pymongo.collection import Collection
 
 from niched.models.schema.threads import ThreadIn, ThreadDB, ThreadOut
+from niched.models.schema.users import UserDetails
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +15,8 @@ def convert_db_thread_to_out(raw_json) -> ThreadOut:
     return ThreadOut(**raw_json, thread_id=str(raw_json["_id"]))
 
 
-def create_thread(threads_collection: Collection, thread_details: ThreadIn) -> ThreadOut:
-    thread_data_insert = ThreadDB(**thread_details.dict(), creation_date=datetime.now())
+def create_thread(threads_collection: Collection, thread_details: ThreadIn, user: UserDetails) -> ThreadOut:
+    thread_data_insert = ThreadDB(**thread_details.dict(), author_id=user.user_name, creation_date=datetime.now())
     thread_dict = thread_data_insert.dict()
 
     # collection.insert returns the id of the new object inserted into the database

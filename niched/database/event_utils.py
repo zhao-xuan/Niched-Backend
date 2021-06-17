@@ -5,7 +5,8 @@ from typing import Optional, List
 from bson import ObjectId
 from pymongo.collection import Collection
 
-from niched.models.schema.events import EventIn, EventOut, EventDB, EventMembers, EventMemberIn, EventMembersGroup
+from niched.models.schema.events import EventIn, EventOut, EventDB, EventMembers, EventMembersGroup
+from niched.models.schema.users import UserDetails
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +22,10 @@ class InvalidEventException(EventException):
         self.message = message
 
 
-def create_event(events_collection: Collection, event: EventIn) -> EventOut:
+def create_event(events_collection: Collection, event: EventIn, user: UserDetails) -> EventOut:
     event_db = EventDB(
         **event.dict(),
+        author_id=user.user_name,
         creation_date=datetime.utcnow(),
         members=EventMembers(going=[], interested=[])
     )
@@ -61,17 +63,19 @@ def check_event_id_exist(events_collection: Collection, event_id: str) -> bool:
     return ObjectId.is_valid(event_id) and events_collection.count_documents({"_id": ObjectId(event_id)}) > 0
 
 
-def add_event_member(events_collection: Collection, event_id: str, member: EventMemberIn) -> bool:
+def add_event_member(events_collection: Collection, event_id: str, member: EventMembersGroup,
+                     user: UserDetails) -> bool:
     for event_group in EventMembersGroup:
         events_collection.update_one({"_id": ObjectId(event_id)},
-                                     {"$pull": {f"members.{event_group}": member.user_name}})
+                                     {"$pull": {f"members.{event_group}": user.user_name}})
 
     res = events_collection.update_one({"_id": ObjectId(event_id)},
-                                       {"$addToSet": {f"members.{member.group}": member.user_name}})
+                                       {"$addToSet": {f"members.{member.group}": user.user_name}})
     return res.matched_count > 0
 
 
-def remove_event_member(events_collection: Collection, event_id: str, member: EventMemberIn) -> bool:
+def remove_event_member(events_collection: Collection, event_id: str, member: EventMembersGroup,
+                        user: UserDetails) -> bool:
     res = events_collection.update_one({"_id": ObjectId(event_id)},
-                                       {"$pull": {f"members.{member.group}": member.user_name}})
+                                       {"$pull": {f"members.{member.group}": user.user_name}})
     return res.matched_count > 0

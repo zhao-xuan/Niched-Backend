@@ -15,17 +15,11 @@ class EventMembersGroup(str, Enum):
     interested = "interested"
 
 
-class EventMemberIn(BaseModel):
-    user_name: str
-    group: EventMembersGroup
-
-
 class EventIn(BaseModel):
     group_id: str
     title: str
     description: str
     tags: List[str]
-    author_id: str
     event_date: datetime
 
     class Config:
@@ -35,13 +29,13 @@ class EventIn(BaseModel):
                 "title": "LAN party 5v5",
                 "description": "ICL vs UCL BO5",
                 "tags": ["csgo", "esports", "icl", "ucl"],
-                "author_id": "bob",
                 "event_date": "2021-06-04T13:00:00"
             }
         }
 
 
 class EventDB(EventIn):
+    author_id: str
     members: EventMembers
     creation_date: datetime
 

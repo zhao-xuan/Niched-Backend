@@ -5,6 +5,7 @@ from typing import Optional, List
 from pymongo.collection import Collection
 
 from niched.models.schema.groups import GroupDataDB, NewGroupIn, GroupMemberIn
+from niched.models.schema.users import UserDetails
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +26,10 @@ def check_group_id_exist(groups: Collection, group_id: str) -> bool:
     return groups.count_documents({"group_id": group_id}) > 0
 
 
-def create_group(groups: Collection, group_details: NewGroupIn) -> bool:
+def create_group(groups: Collection, group_details: NewGroupIn, user: UserDetails) -> bool:
     group_data_insert = GroupDataDB(
         **group_details.dict(),
+        author_id=user.user_name,
         members=[],
         creation_date=datetime.utcnow()
     )
@@ -69,7 +71,7 @@ def check_member_in_group(groups: Collection, group_id: str, user_name: str) -> 
     return user_name in group_db.members or user_name == group_db.author_id
 
 
-def group_add_new_member(groups: Collection, users: Collection, group_id: str, new_member: GroupMemberIn) -> bool:
+def group_add_new_member(groups: Collection, users: Collection, group_id: str, new_member: UserDetails) -> bool:
     """ Precondition: GROUP_ID and USER_ID should be valid """
 
     group_update_res = groups.update_one({"group_id": group_id}, {"$push": {"members": new_member.user_name}})
@@ -84,7 +86,7 @@ def group_add_new_member(groups: Collection, users: Collection, group_id: str, n
     return True
 
 
-def group_remove_member(groups: Collection, users: Collection, group_id: str, user: GroupMemberIn) -> bool:
+def group_remove_member(groups: Collection, users: Collection, group_id: str, user: UserDetails) -> bool:
     """ Precondition: GROUP_ID and USER_ID should be valid """
 
     group_json = groups.find_one({"group_id": group_id})

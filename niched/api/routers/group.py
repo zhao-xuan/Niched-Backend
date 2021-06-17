@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from starlette.status import (HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT,
                               HTTP_500_INTERNAL_SERVER_ERROR, HTTP_401_UNAUTHORIZED)
@@ -15,6 +15,8 @@ from niched.database.user_utils import check_user_id_exist
 from niched.models.schema.events import EventOut
 from niched.models.schema.groups import GroupDataDB, NewGroupIn, GroupMemberIn
 from niched.models.schema.threads import ThreadOut
+from niched.models.schema.users import UserDetails
+from niched.utilities.token import get_current_active_user
 
 router = APIRouter()
 
@@ -38,7 +40,7 @@ def get_group_with_id(group_id: str):
 
 
 @router.post("/new", response_model=NewGroupIn, status_code=HTTP_201_CREATED, name="group:create")
-def create_new_group(group_details: NewGroupIn):
+def create_new_group(group_details: NewGroupIn, current_user: UserDetails = Depends(get_current_active_user)):
     groups_collection = conn.get_groups_collection()
 
     if group_details.image_url == "":
@@ -47,7 +49,7 @@ def create_new_group(group_details: NewGroupIn):
     if check_group_id_exist(groups_collection, group_details.group_id):
         raise HTTPException(status_code=HTTP_409_CONFLICT, detail={"msg": "Group ID already in used!"})
 
-    if not create_group(groups_collection, group_details):
+    if not create_group(groups_collection, group_details, current_user):
         logger.error(f"Cannot create new group with details {group_details.dict()}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
                             detail={"msg": "Unexpected Error! Server failed to create new group"})
@@ -66,16 +68,13 @@ def get_all_events_in_group(group_id: str):
     return get_events_by_group(events_collection, group_id)
 
 
-@router.post("/{group_id}/members", status_code=HTTP_201_CREATED, name="group:addMember")
-def add_member_to_group(group_id: str, new_member: GroupMemberIn):
+@router.post("/{group_id}/members", status_code=HTTP_201_CREATED, name="group:join")
+def add_member_to_group(group_id: str, new_member: UserDetails = Depends(get_current_active_user)):
     groups_collection = conn.get_groups_collection()
     users_collection = conn.get_users_collection()
 
     if not check_group_id_exist(groups_collection, group_id):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "Group ID not found!"})
-
-    if not check_user_id_exist(users_collection, new_member.user_name):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "User ID does not exist!"})
 
     if check_member_in_group(groups_collection, group_id, new_member.user_name):
         raise HTTPException(status_code=HTTP_409_CONFLICT, detail={"msg": "User already in group"})
@@ -87,22 +86,19 @@ def add_member_to_group(group_id: str, new_member: GroupMemberIn):
     return JSONResponse(status_code=HTTP_201_CREATED, content={"detail": {"msg": "User added to group successfully"}})
 
 
-@router.delete("/{group_id}/members", status_code=HTTP_200_OK, name="group:removeMember")
-def get_member_in_group(group_id: str, new_member: GroupMemberIn):
+@router.delete("/{group_id}/members", status_code=HTTP_200_OK, name="group:leave")
+def get_member_in_group(group_id: str, member: UserDetails = Depends(get_current_active_user)):
     groups_collection = conn.get_groups_collection()
     users_collection = conn.get_users_collection()
 
     if not check_group_id_exist(groups_collection, group_id):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "Group ID not found!"})
 
-    if not check_user_id_exist(users_collection, new_member.user_name):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "User ID does not exist!"})
-
-    if not check_member_in_group(groups_collection, group_id, new_member.user_name):
+    if not check_member_in_group(groups_collection, group_id, member.user_name):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "User is not in group"})
 
     try:
-        if not group_remove_member(groups_collection, users_collection, group_id, new_member):
+        if not group_remove_member(groups_collection, users_collection, group_id, member):
             raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail={"msg": "Server failed to process request, check logs for more detail"})
     except InvalidGroupOperation as e:

@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_200_OK, HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -12,6 +12,8 @@ from niched.database.thread_utils import create_thread, get_thread, check_thread
 from niched.database.user_utils import check_user_id_exist
 from niched.models.schema.comments import CommentOut, CommentIn
 from niched.models.schema.threads import ThreadIn, ThreadOut
+from niched.models.schema.users import UserDetails
+from niched.utilities.token import get_current_active_user
 
 router = APIRouter()
 
@@ -19,18 +21,14 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=ThreadOut, status_code=status.HTTP_201_CREATED, name="thread:create")
-def create_new_thread(thread_details: ThreadIn):
+def create_new_thread(thread_details: ThreadIn, current_user: UserDetails = Depends(get_current_active_user)):
     threads_collection = conn.get_threads_collection()
     groups_collection = conn.get_groups_collection()
-    users_collection = conn.get_users_collection()
 
     if not check_group_id_exist(groups_collection, thread_details.group_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Group does not exist"})
 
-    if not check_user_id_exist(users_collection, thread_details.author_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Invalid user ID"})
-
-    thread_out = create_thread(threads_collection, thread_details)
+    thread_out = create_thread(threads_collection, thread_details, current_user)
     if thread_out:
         return thread_out
     else:

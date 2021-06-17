@@ -107,7 +107,7 @@ def get_member_in_group(group_id: str, new_member: GroupMemberIn):
                                 detail={"msg": "Server failed to process request, check logs for more detail"})
     except InvalidGroupOperation as e:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED,
-                            detail=e.message)
+                            detail={"msg": e.message})
 
     return JSONResponse(status_code=HTTP_200_OK, content={"detail": {"msg": "User removed from group successfully"}})
 

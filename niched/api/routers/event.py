@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.status import (
@@ -5,7 +7,7 @@ from starlette.status import (
 )
 
 from niched.database.event_utils import (create_event, check_event_id_exist, get_event_with_id, InvalidEventException,
-                                         add_event_member, remove_event_member)
+                                         add_event_member, remove_event_member, get_all_events)
 from niched.database.mongo import conn
 from niched.database.user_utils import check_user_id_exist
 from niched.models.schema.events import EventIn, EventOut, EventMemberIn
@@ -28,6 +30,13 @@ def new_event(event_data: EventIn):
     except InvalidEventException as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST,
                             detail={"msg": e.message})
+
+
+@router.get("/", response_model=List[EventOut], status_code=HTTP_200_OK, name="event:getAllEvents")
+def get_event_by_id(skip: int = 0, limit: int = 0):
+    event_coll = conn.get_events_collection()
+
+    return get_all_events(event_coll, skip, limit)
 
 
 @router.get("/{event_id}", response_model=EventOut, status_code=HTTP_200_OK, name="event:getById")

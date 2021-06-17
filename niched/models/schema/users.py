@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, constr
 
 
 class UserDetails(BaseModel):
@@ -37,7 +37,7 @@ class UserDetailsDB(UserDetails):
 class UserDetailsUpdate(BaseModel):
     email: Optional[EmailStr]
     age: Optional[int]
-    interests: Optional[List[str]]
+    interests: Optional[List[constr(to_lower=True, strip_whitespace=True)]]
 
     class Config:
         schema_extra = {

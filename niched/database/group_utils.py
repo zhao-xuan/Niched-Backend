@@ -55,7 +55,7 @@ def get_group(groups: Collection, group_id: str) -> Optional[GroupDataDB]:
 def get_all_groups_in_db(groups: Collection) -> List[GroupDataDB]:
     try:
         groups = groups.find({})
-        return [group for group in groups]
+        return [GroupDataDB(**group) for group in groups]
     except Exception as e:
         logger.error(f"Exception raised when fetching all groups in database {e} ")
         return []
@@ -105,3 +105,12 @@ def group_remove_member(groups: Collection, users: Collection, group_id: str, us
         return False
 
     return True
+
+
+def find_groups_contain_tags(groups: Collection, targets: List[str], limit: int, skip: int) -> List[GroupDataDB]:
+    res = groups.find({"tags": {"$in": targets}}).skip(skip).limit(limit)
+    return [GroupDataDB(**g) for g in res]
+
+def find_groups_contain_tags(groups: Collection, query: List[str], limit: int, skip: int) -> List[GroupDataDB]:
+    res = groups.find({"tags": {"$in": targets}}).skip(skip).limit(limit)
+    return [GroupDataDB(**g) for g in res]

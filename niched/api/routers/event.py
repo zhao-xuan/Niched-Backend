@@ -68,7 +68,7 @@ def add_member_to_event(event_id: str, member: EventMemberIn):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND,
                             detail={"msg": "Invalid user ID!"})
 
-    if add_event_member(event_coll, event_id, member):
+    if add_event_member(event_coll, users_coll, event_id, member):
         return JSONResponse(status_code=HTTP_201_CREATED,
                             content={
                                 "detail": {
@@ -91,7 +91,7 @@ def add_member_to_event(event_id: str, member: EventMemberIn):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND,
                             detail={"msg": "Invalid user ID!"})
 
-    if remove_event_member(event_coll, event_id, member):
+    if remove_event_member(event_coll, users_coll, event_id, member):
         return JSONResponse(status_code=HTTP_201_CREATED,
                             content={
                                 "detail": {

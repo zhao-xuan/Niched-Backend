@@ -6,9 +6,16 @@ from bson import ObjectId
 from pymongo.collection import Collection
 
 from niched.models.schema.events import EventOut
-from niched.models.schema.users import UserDetails, UserDetailsUpdate
+from niched.models.schema.users import UserDetails, UserDetailsUpdate, UserDetailsDB
 
 logger = logging.getLogger(__name__)
+
+
+def convert_user_db_to_details(userdb_json) -> UserDetails:
+    events = [str(e) for e in userdb_json['events']]
+    userdb = UserDetailsDB(**userdb_json)
+
+    return UserDetails(**userdb.dict(exclude={"password", "events"}), events=events)
 
 
 def check_user_id_exist(users_collection: Collection, user_name: str) -> bool:
@@ -17,9 +24,7 @@ def check_user_id_exist(users_collection: Collection, user_name: str) -> bool:
 
 def get_user_profile(users_coll: Collection, user_name: str) -> UserDetails:
     user_db_json = users_coll.find_one({"user_name": user_name})
-    del user_db_json["password"]
-
-    return UserDetails(**user_db_json)
+    return convert_user_db_to_details(user_db_json)
 
 
 def update_user_profile(users_coll: Collection, user_name: str, new_details: UserDetailsUpdate) -> Optional[

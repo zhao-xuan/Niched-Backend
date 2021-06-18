@@ -2,6 +2,8 @@ from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr, constr
 
+from niched.models.schema.oid import OID
+
 
 class UserDetails(BaseModel):
     user_name: str
@@ -32,6 +34,7 @@ class UserToken(BaseModel):
 
 class UserDetailsDB(UserDetails):
     password: str
+    events: List[OID] = []
 
 
 class UserDetailsUpdate(BaseModel):

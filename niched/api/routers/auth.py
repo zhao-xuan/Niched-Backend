@@ -12,6 +12,7 @@ from starlette.status import (
 from niched.core.config import ACCESS_TOKEN_EXPIRE_MINS, ACCESS_TOKEN_SECRET_KEY
 from niched.database.authentication import create_user, get_user_login_details
 from niched.database.mongo import conn
+from niched.database.user_utils import convert_user_db_to_details
 from niched.models.schema.users import UserDetailsDB, UserDetails, UserToken
 from niched.utilities.token import create_access_token
 
@@ -32,7 +33,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not bcrypt.checkpw(password.encode("utf-8"), user_db.password.encode('utf-8')):
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail={"msg": "Incorrect username or password"})
 
-    user_no_passwd = UserDetails(**user_db.dict(exclude={"password"}))
+    user_no_passwd = convert_user_db_to_details(user_db.dict())
     token = create_access_token(user_no_passwd, ACCESS_TOKEN_EXPIRE_MINS, ACCESS_TOKEN_SECRET_KEY)
     return UserToken(access_token=token, token_type="bearer", user_details=user_no_passwd)
 
@@ -47,7 +48,7 @@ def signup(user_name: str = Form(..., description="Unique account username, used
 
     hash_pwd = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     user_details = UserDetails(user_name=user_name)
-    userdb = UserDetailsDB(**user_details.dict(), password=hash_pwd.decode("utf-8"))
+    userdb = UserDetailsDB(**user_details.dict(exclude={"events"}), password=hash_pwd.decode("utf-8"), events=[])
 
     if create_user(users_collection, userdb):
         return user_details

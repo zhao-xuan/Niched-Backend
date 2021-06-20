@@ -66,7 +66,7 @@ def check_member_in_group(groups: Collection, group_id: str, user_name: str) -> 
 
     group_json = groups.find_one({"group_id": group_id})
     group_db = GroupDataDB(**group_json)
-    return user_name in group_db.members or user_name == group_db.author_id
+    return user_name in group_db.members
 
 
 def group_add_new_member(groups: Collection, users: Collection, group_id: str, new_member: GroupMemberIn) -> bool:

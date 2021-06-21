@@ -56,7 +56,7 @@ def create_new_group(group_details: NewGroupIn):
     return group_details
 
 
-@router.delete("/", status_code=HTTP_200_OK, name="group:delete")
+@router.delete("", status_code=HTTP_200_OK, name="group:delete")
 def delete_group(group_id: str):
     groups_collection = conn.get_groups_collection()
 

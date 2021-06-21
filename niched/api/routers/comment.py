@@ -14,7 +14,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/", name="comment:postComment")
+@router.post("", name="comment:postComment")
 def post_comment_to_thread(comment: CommentIn):
     threads_collection = conn.get_threads_collection()
     comments_collection = conn.get_comments_collection()

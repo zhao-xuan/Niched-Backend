@@ -18,7 +18,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/", response_model=ThreadOut, status_code=status.HTTP_201_CREATED, name="thread:create")
+@router.post("", response_model=ThreadOut, status_code=status.HTTP_201_CREATED, name="thread:create")
 def create_new_thread(thread_details: ThreadIn):
     threads_collection = conn.get_threads_collection()
     groups_collection = conn.get_groups_collection()

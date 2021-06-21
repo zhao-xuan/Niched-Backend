@@ -7,16 +7,15 @@ from niched.models.schema.groups import GroupDataDB, NewGroupIn
 
 
 class GroupMethodTestCase(unittest.TestCase):
-
     example_group = GroupDataDB(
-            group_id      = "csgo",
-            author_id     = "alice",
-            name          = "Counter Strike: Global Offsensive",
-            description   = "CSGO players number 1!",
-            members       = [],
-            image_url     = "http://media.steampowered.com/apps/csgo/blog/images/fb_image.png?v=6",
-            creation_date = datetime.utcnow()
-        )
+        group_id="csgo",
+        author_id="alice",
+        name="Counter Strike: Global Offsensive",
+        description="CSGO players number 1!",
+        members=[],
+        image_url="http://media.steampowered.com/apps/csgo/blog/images/fb_image.png?v=6",
+        creation_date=datetime.utcnow()
+    )
 
     example_new_group = NewGroupIn(
         group_id="csgo",
@@ -28,17 +27,17 @@ class GroupMethodTestCase(unittest.TestCase):
 
     def test_create_groups_calls_insert_on_db(self):
         mock_client = Mock()
-        create_group(mock_client, self.example_new_group)
+        create_group(mock_client, mock_client, self.example_new_group)
         mock_client.insert_one.assert_called_once()
 
     def test_create_group_returns_true_when_new_group_created(self):
         mock_client = Mock()
-        self.assertTrue(create_group(mock_client, self.example_new_group))
+        self.assertTrue(create_group(mock_client, mock_client, self.example_new_group))
 
     def test_create_group_returns_false_when_new_group_create_failed(self):
         mock_client = Mock()
         mock_client.insert_one.side_effect = Exception("Cannot create user")
-        self.assertFalse(create_group(mock_client, self.example_new_group))
+        self.assertFalse(create_group(mock_client, mock_client, self.example_new_group))
 
     def test_get_group_queries_db(self):
         mock_client = Mock()

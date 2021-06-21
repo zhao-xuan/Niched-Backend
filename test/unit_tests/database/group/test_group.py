@@ -32,12 +32,12 @@ class GroupMethodTestCase(unittest.TestCase):
 
     def test_create_group_returns_true_when_new_group_created(self):
         mock_client = Mock()
-        self.assertTrue(create_group(mock_client, self.example_new_group))
+        self.assertTrue(create_group(mock_client, mock_client, self.example_new_group))
 
     def test_create_group_returns_false_when_new_group_create_failed(self):
         mock_client = Mock()
         mock_client.insert_one.side_effect = Exception("Cannot create user")
-        self.assertFalse(create_group(mock_client, self.example_new_group))
+        self.assertFalse(create_group(mock_client, mock_client, self.example_new_group))
 
     def test_get_group_queries_db(self):
         mock_client = Mock()

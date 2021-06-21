@@ -15,7 +15,7 @@ from niched.models.schema.events import EventIn, EventOut, EventMemberIn
 router = APIRouter()
 
 
-@router.post("/", response_model=EventOut, status_code=HTTP_201_CREATED, name="event:create")
+@router.post("", response_model=EventOut, status_code=HTTP_201_CREATED, name="event:create")
 def new_event(event_data: EventIn):
     event_coll = conn.get_events_collection()
     users_coll = conn.get_users_collection()
@@ -32,8 +32,8 @@ def new_event(event_data: EventIn):
                             detail={"msg": e.message})
 
 
-@router.get("/", response_model=List[EventOut], status_code=HTTP_200_OK, name="event:getAllEvents")
-def get_event_by_id(skip: int = 0, limit: int = 0):
+@router.get("", response_model=List[EventOut], status_code=HTTP_200_OK, name="event:getAllEvents")
+def get_event_all(skip: int = 0, limit: int = 0):
     event_coll = conn.get_events_collection()
 
     return get_all_events(event_coll, skip, limit)

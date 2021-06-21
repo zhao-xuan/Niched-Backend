@@ -25,10 +25,10 @@ def check_group_id_exist(groups: Collection, group_id: str) -> bool:
     return groups.count_documents({"group_id": group_id}) > 0
 
 
-def create_group(groups: Collection, group_details: NewGroupIn) -> bool:
+def create_group(groups: Collection, users: Collection, group_details: NewGroupIn) -> bool:
     group_data_insert = GroupDataDB(
         **group_details.dict(),
-        members=[],
+        members=[group_details.author_id],
         creation_date=datetime.utcnow()
     )
 
@@ -37,6 +37,8 @@ def create_group(groups: Collection, group_details: NewGroupIn) -> bool:
     try:
         groups.insert_one(group_dict)
         logger.info(f"Group {group_details.name} created successfully!")
+        users.update_one({"user_name": group_details.author_id},
+                         {"$push": {"subscribed_groups": group_details.group_id}})
         return True
     except Exception as e:
         logger.error(f"Cannot create group {group_details.name}, exception raised {e}")
@@ -50,6 +52,24 @@ def get_group(groups: Collection, group_id: str) -> Optional[GroupDataDB]:
     except Exception as e:
         logger.error(f"Exception raised when fetching group {group_id}: {e}")
         return None
+
+
+def remove_group(groups: Collection, users: Collection, events: Collection, threads: Collection, comments: Collection,
+                 group_id: str):
+    users.update_many({"subscribed_groups": group_id}, {"$pull": {"subscribed_groups": group_id}})
+
+    threads_to_remove = threads.find({"group_id": group_id})
+    for t in threads_to_remove:
+        comments.delete_many({"thread_id": str(t['_id'])})
+    threads.delete_many({"group_id": group_id})
+
+    events_to_remove = events.find({"group_id": group_id})
+    for e in events_to_remove:
+        all_members = e['members']['going'] + e['members']['interested']
+        users.update_many({"user_name": {"$in": all_members}}, {"$pull": {"events": str(e['_id'])}})
+    events.delete_many({"group_id": group_id})
+
+    groups.delete_one({"group_id": group_id})
 
 
 def get_all_groups_in_db(groups: Collection) -> List[GroupDataDB]:

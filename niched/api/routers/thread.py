@@ -57,11 +57,12 @@ def get_thread_with_id(thread_id: str):
 @router.delete("/{thread_id}", status_code=HTTP_200_OK, name="thread:remove")
 def remove_thread_with_id(thread_id: str):
     threads_collection = conn.get_threads_collection()
+    comments_collection = conn.get_comments_collection()
 
     if not check_thread_id_exist(threads_collection, thread_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Thread ID does not exist"})
 
-    if remove_thread(threads_collection, thread_id):
+    if remove_thread(threads_collection, comments_collection, thread_id):
         return JSONResponse(status_code=HTTP_200_OK, content={
             "detail": {
                 "msg": "Thread removed successfully"

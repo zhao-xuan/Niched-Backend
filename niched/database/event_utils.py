@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from typing import Optional, List
 
+import pymongo
 from bson import ObjectId
 from pymongo.collection import Collection
 
@@ -22,7 +23,8 @@ class InvalidEventException(EventException):
         self.message = message
 
 
-def create_event(events_collection: Collection, event: EventIn, user: UserDetails) -> EventOut:
+def create_event(events_collection: Collection, users_collection: Collection, event: EventIn,
+                 user: UserDetails) -> EventOut:
     event_db = EventDB(
         **event.dict(),
         author_id=user.user_name,
@@ -34,8 +36,15 @@ def create_event(events_collection: Collection, event: EventIn, user: UserDetail
         raise InvalidEventException("Cannot create event in the past")
 
     result = events_collection.insert_one(event_db.dict())
+    event_id = result.inserted_id
     logger.info(f"Event {str(result.inserted_id)} created successfully!")
+    user_res = users_collection.update_one({"user_name": user.user_name}, {"$push": {"events": ObjectId(event_id)}})
     return EventOut(event_id=str(result.inserted_id), **event_db.dict())
+
+
+def get_all_events(events_collection: Collection, skip: int, limit: int) -> List[EventOut]:
+    events = events_collection.find({}).sort("creation_date", pymongo.DESCENDING).skip(skip).limit(limit)
+    return [EventOut(event_id=str(e['_id']), **e) for e in events]
 
 
 def get_events_by_group(events_collection: Collection, group_id: str) -> List[EventOut]:
@@ -63,19 +72,31 @@ def check_event_id_exist(events_collection: Collection, event_id: str) -> bool:
     return ObjectId.is_valid(event_id) and events_collection.count_documents({"_id": ObjectId(event_id)}) > 0
 
 
-def add_event_member(events_collection: Collection, event_id: str, group: EventMembersGroup,
-                     user: UserDetails) -> bool:
+def add_event_member(events_collection: Collection, users_collection: Collection, event_id: str,
+                     group: EventMembersGroup, user: UserDetails) -> bool:
     for event_group in EventMembersGroup:
         events_collection.update_one({"_id": ObjectId(event_id)},
                                      {"$pull": {f"members.{event_group}": user.user_name}})
 
-    res = events_collection.update_one({"_id": ObjectId(event_id)},
-                                       {"$addToSet": {f"members.{group}": user.user_name}})
-    return res.matched_count > 0
+    event_res = events_collection.update_one({"_id": ObjectId(event_id)},
+                                             {"$addToSet": {f"members.{group}": user.user_name}})
+
+    if event_res.modified_count == 0:
+        return False
+
+    user_res = users_collection.update_one({"user_name": user.user_name}, {"$push": {"events": ObjectId(event_id)}})
+    if user_res.modified_count == 0:
+        remove_event_member(events_collection, users_collection, event_id, group, user)
+        return False
+
+    return True
 
 
-def remove_event_member(events_collection: Collection, event_id: str, group: EventMembersGroup,
+def remove_event_member(events_collection: Collection, users_collection: Collection, event_id: str,
+                        group: EventMembersGroup,
                         user: UserDetails) -> bool:
-    res = events_collection.update_one({"_id": ObjectId(event_id)},
-                                       {"$pull": {f"members.{group}": user.user_name}})
-    return res.matched_count > 0
+    event_res = events_collection.update_one({"_id": ObjectId(event_id)},
+                                             {"$pull": {f"members.{group}": user.user_name}})
+
+    user_res = users_collection.update_one({"user_name": user.user_name}, {"$pull": {"events": ObjectId(event_id)}})
+    return event_res.matched_count > 0 and user_res.matched_count > 0

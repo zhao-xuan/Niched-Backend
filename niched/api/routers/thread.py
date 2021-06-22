@@ -9,8 +9,7 @@ from niched.database.comment_utils import get_comments_in_thread
 from niched.database.group_utils import check_group_id_exist
 from niched.database.mongo import conn
 from niched.database.thread_utils import create_thread, get_thread, check_thread_id_exist, remove_thread
-from niched.database.user_utils import check_user_id_exist
-from niched.models.schema.comments import CommentOut, CommentIn
+from niched.models.schema.comments import CommentOut
 from niched.models.schema.threads import ThreadIn, ThreadOut
 from niched.models.schema.users import UserDetails
 from niched.utilities.token import get_current_active_user
@@ -55,11 +54,12 @@ def get_thread_with_id(thread_id: str):
 @router.delete("/{thread_id}", status_code=HTTP_200_OK, name="thread:remove")
 def remove_thread_with_id(thread_id: str):
     threads_collection = conn.get_threads_collection()
+    comments_collection = conn.get_comments_collection()
 
     if not check_thread_id_exist(threads_collection, thread_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Thread ID does not exist"})
 
-    if remove_thread(threads_collection, thread_id):
+    if remove_thread(threads_collection, comments_collection, thread_id):
         return JSONResponse(status_code=HTTP_200_OK, content={
             "detail": {
                 "msg": "Thread removed successfully"
@@ -81,4 +81,3 @@ def get_all_comments_in_thread(thread_id: str):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg": "Thread ID does not exist"})
 
     return get_comments_in_thread(comments_collection, thread_id)
-

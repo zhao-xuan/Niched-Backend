@@ -8,12 +8,11 @@ from starlette.status import (HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND,
 
 from niched.database.event_utils import get_events_by_group
 from niched.database.group_utils import create_group, get_group, check_group_id_exist, group_add_new_member, \
-    check_member_in_group, group_remove_member, InvalidGroupOperation
+    check_member_in_group, group_remove_member, InvalidGroupOperation, remove_group
 from niched.database.mongo import conn
 from niched.database.thread_utils import get_all_thread_in_group
-from niched.database.user_utils import check_user_id_exist
 from niched.models.schema.events import EventOut
-from niched.models.schema.groups import GroupDataDB, NewGroupIn, GroupMemberIn
+from niched.models.schema.groups import GroupDataDB, NewGroupIn
 from niched.models.schema.threads import ThreadOut
 from niched.models.schema.users import UserDetails
 from niched.utilities.token import get_current_active_user
@@ -42,6 +41,7 @@ def get_group_with_id(group_id: str):
 @router.post("/new", response_model=NewGroupIn, status_code=HTTP_201_CREATED, name="group:create")
 def create_new_group(group_details: NewGroupIn, current_user: UserDetails = Depends(get_current_active_user)):
     groups_collection = conn.get_groups_collection()
+    users_collection = conn.get_users_collection()
 
     if group_details.image_url == "":
         group_details.image_url = None
@@ -49,12 +49,28 @@ def create_new_group(group_details: NewGroupIn, current_user: UserDetails = Depe
     if check_group_id_exist(groups_collection, group_details.group_id):
         raise HTTPException(status_code=HTTP_409_CONFLICT, detail={"msg": "Group ID already in used!"})
 
-    if not create_group(groups_collection, group_details, current_user):
+    if not create_group(groups_collection, users_collection, group_details, current_user):
         logger.error(f"Cannot create new group with details {group_details.dict()}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
                             detail={"msg": "Unexpected Error! Server failed to create new group"})
 
     return group_details
+
+
+@router.delete("", status_code=HTTP_200_OK, name="group:delete")
+def delete_group(group_id: str):
+    groups_collection = conn.get_groups_collection()
+
+    if not check_group_id_exist(groups_collection, group_id):
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail={"msg": "Invalid group ID !"})
+
+    try:
+        remove_group(groups_collection, conn.get_users_collection(), conn.get_events_collection(),
+                     conn.get_threads_collection(), conn.get_comments_collection(), group_id)
+    except Exception as e:
+        logger.error(f"Error while trying to delete group {e}")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail={"msg": "Server failed to process request"})
 
 
 @router.get("/{group_id}/events", response_model=List[EventOut], status_code=HTTP_200_OK, name="group:events")
@@ -103,7 +119,7 @@ def get_member_in_group(group_id: str, member: UserDetails = Depends(get_current
                                 detail={"msg": "Server failed to process request, check logs for more detail"})
     except InvalidGroupOperation as e:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED,
-                            detail=e.message)
+                            detail={"msg": e.message})
 
     return JSONResponse(status_code=HTTP_200_OK, content={"detail": {"msg": "User removed from group successfully"}})
 

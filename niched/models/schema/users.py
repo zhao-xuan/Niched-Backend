@@ -1,6 +1,8 @@
 from typing import Optional, List
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, constr
+
+from niched.models.schema.oid import OID
 
 
 class UserDetails(BaseModel):
@@ -9,6 +11,7 @@ class UserDetails(BaseModel):
     age: Optional[int]
     subscribed_groups: List[str] = []
     interests: List[str] = []
+    events: List[str] = []
 
     class Config:
         schema_extra = {
@@ -18,6 +21,7 @@ class UserDetails(BaseModel):
                 "age": 50,
                 "subscribed_groups": [],
                 "interests": [],
+                "events": []
             }
         }
 
@@ -30,12 +34,13 @@ class UserToken(BaseModel):
 
 class UserDetailsDB(UserDetails):
     password: str
+    events: List[OID] = []
 
 
 class UserDetailsUpdate(BaseModel):
     email: Optional[EmailStr]
     age: Optional[int]
-    interests: Optional[List[str]]
+    interests: Optional[List[constr(to_lower=True, strip_whitespace=True)]]
 
     class Config:
         schema_extra = {

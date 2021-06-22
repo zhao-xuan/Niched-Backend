@@ -34,9 +34,10 @@ def check_thread_id_exist(thread_collection: Collection, thread_id: str) -> bool
     return ObjectId.is_valid(thread_id) and thread_collection.count_documents({"_id": ObjectId(thread_id)}) > 0
 
 
-def remove_thread(threads_collection: Collection, thread_id: str) -> bool:
+def remove_thread(threads_collection: Collection, comments_collection: Collection, thread_id: str) -> bool:
     """ [thread_id] should be valid"""
     thread_query = {"_id": ObjectId(thread_id)}
+    comments_collection.delete_many({"thread_id": ObjectId(thread_id)})
     res = threads_collection.delete_one(thread_query)
     return res.deleted_count > 0
 

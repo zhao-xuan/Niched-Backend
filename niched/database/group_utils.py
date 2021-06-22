@@ -26,11 +26,11 @@ def check_group_id_exist(groups: Collection, group_id: str) -> bool:
     return groups.count_documents({"group_id": group_id}) > 0
 
 
-def create_group(groups: Collection, group_details: NewGroupIn, user: UserDetails) -> bool:
+def create_group(groups: Collection, users: Collection, group_details: NewGroupIn, user: UserDetails) -> bool:
     group_data_insert = GroupDataDB(
         **group_details.dict(),
         author_id=user.user_name,
-        members=[],
+        members=[user.user_name],
         creation_date=datetime.utcnow()
     )
 
@@ -39,6 +39,8 @@ def create_group(groups: Collection, group_details: NewGroupIn, user: UserDetail
     try:
         groups.insert_one(group_dict)
         logger.info(f"Group {group_details.name} created successfully!")
+        users.update_one({"user_name": user.user_name},
+                         {"$push": {"subscribed_groups": group_details.group_id}})
         return True
     except Exception as e:
         logger.error(f"Cannot create group {group_details.name}, exception raised {e}")
@@ -54,10 +56,28 @@ def get_group(groups: Collection, group_id: str) -> Optional[GroupDataDB]:
         return None
 
 
+def remove_group(groups: Collection, users: Collection, events: Collection, threads: Collection, comments: Collection,
+                 group_id: str):
+    users.update_many({"subscribed_groups": group_id}, {"$pull": {"subscribed_groups": group_id}})
+
+    threads_to_remove = threads.find({"group_id": group_id})
+    for t in threads_to_remove:
+        comments.delete_many({"thread_id": str(t['_id'])})
+    threads.delete_many({"group_id": group_id})
+
+    events_to_remove = events.find({"group_id": group_id})
+    for e in events_to_remove:
+        all_members = e['members']['going'] + e['members']['interested']
+        users.update_many({"user_name": {"$in": all_members}}, {"$pull": {"events": str(e['_id'])}})
+    events.delete_many({"group_id": group_id})
+
+    groups.delete_one({"group_id": group_id})
+
+
 def get_all_groups_in_db(groups: Collection) -> List[GroupDataDB]:
     try:
         groups = groups.find({})
-        return [group for group in groups]
+        return [GroupDataDB(**group) for group in groups]
     except Exception as e:
         logger.error(f"Exception raised when fetching all groups in database {e} ")
         return []
@@ -68,7 +88,7 @@ def check_member_in_group(groups: Collection, group_id: str, user_name: str) -> 
 
     group_json = groups.find_one({"group_id": group_id})
     group_db = GroupDataDB(**group_json)
-    return user_name in group_db.members or user_name == group_db.author_id
+    return user_name in group_db.members
 
 
 def group_add_new_member(groups: Collection, users: Collection, group_id: str, new_member: UserDetails) -> bool:
@@ -107,3 +127,8 @@ def group_remove_member(groups: Collection, users: Collection, group_id: str, us
         return False
 
     return True
+
+
+def find_groups_contain_tags(groups: Collection, targets: List[str], limit: int, skip: int) -> List[GroupDataDB]:
+    res = groups.find({"tags": {"$in": targets}}).skip(skip).limit(limit)
+    return [GroupDataDB(**g) for g in res]
